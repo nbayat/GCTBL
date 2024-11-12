@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+
+    <!-- En-tête -->
+    <header class="mb-6">
+        <div id="header">
+            <div>
+                <img src="images/logo.png" />
+            </div>
+            <div>
+                <h1>BNP Paribas</h1>
+            </div>
+            <div>
+                <h1>&#65372</h1>
+            </div>
+            <div>
+                <h1>Gestion de Comptes et Transactions Bancaires en Ligne</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Corps de la page -->
+    <div class="flex flex-col items-center min-h-screen space-y-8">
+        <!-- Titre de la page -->
+        <h2 class="text-4xl font-extrabold">Dashboard</h2>
+
+        <!-- Section Compte bancaire -->
+        <div class="w-full max-w-4xl px-4 py-2 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold">Mes comptes bancaires</h3>
+
+            <!-- Bouton Ajouter un compte bancaire -->
+            <form action="addBankAccount.html">
+                <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-900 mt-4">
+                    Ajouter un compte bancaire
+                </button>
+            </form>
+
+            <!-- Solde -->
+            <div class="mt-4">
+                <p class="text-lg font-medium">Solde : <span class="font-semibold">€0.00</span></p>
+            </div>
+
+            <!-- Tableau des comptes -->
+            <div class="overflow-x-auto mt-6">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Nom de compte</th>
+                            <th scope="col" class="px-6 py-3">Solde actuel</th>
+                            <th scope="col" class="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody" class="bg-white dark:bg-gray-800">
+                        <!-- Les comptes bancaires seront insérés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer></footer>
+</body>
+
+</html>

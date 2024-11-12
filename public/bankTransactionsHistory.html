@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Historique des Transactions</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+
+    <!-- En-tête -->
+    <header class="mb-6">
+        <div id="header">
+            <div>
+                <img src="images/logo.png" />
+            </div>
+            <div>
+                <h1>BNP Paribas</h1>
+            </div>
+            <div>
+                <h1>&#65372</h1>
+            </div>
+            <div>
+                <h1>Gestion de Comptes et Transactions Bancaires en Ligne</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Corps de la page -->
+    <div class="flex flex-col items-center min-h-screen space-y-8">
+
+        <!-- Bouton de retour à la page d'accueil -->
+        <form action="dashboard.html" class="mb-4">
+            <button type="submit">
+                <img src="images/logo.png" alt="Accueil" class="w-28 h-28 rounded-full hover:opacity-80 transition-opacity duration-200" />
+            </button>
+        </form>
+
+        <!-- Titre de la page -->
+        <h2 class="text-4xl font-extrabold">Historique des transactions</h2>
+
+        <!-- Boutons d'actions : Exporter et Ajouter une transaction -->
+        <div class="flex space-x-4">
+            <!-- Bouton Exporter -->
+            <button class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-700 dark:hover:bg-green-800 dark:focus:ring-green-900">
+                Exporter
+            </button>
+            <!-- Bouton Ajouter une transaction -->
+            <form action="addBankAccount.html">
+                <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-xl w-12 h-12 flex items-center justify-center dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-900">
+                    +
+                </button>
+            </form>
+        </div>
+
+        <!-- Tableau d'historique des transactions -->
+        <div class="overflow-x-auto w-full max-w-4xl">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3">Type</th>
+                        <th scope="col" class="px-6 py-3">Montant</th>
+                        <th scope="col" class="px-6 py-3">Solde</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody" class="bg-white dark:bg-gray-800">
+                    <!-- Les entrées de transactions seront insérées ici -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer></footer>
+</body>
+
+</html>
