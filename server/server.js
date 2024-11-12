@@ -35,6 +35,14 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+app.get("/login", (req, res) => {
+  res.sendFile("/Users/nima/dev/gctbl/public/login.html");
+});
+
+app.get("/register", (req, res) => {
+  res.sendFile("/Users/nima/dev/gctbl/public/register.html");
+});
+
 // Route to register a new user with the "nom" field first
 app.post("/api/register", async (req, res) => {
   const { nom, email, password } = req.body; // Now accepting "nom" first, followed by "email" and "password"
@@ -63,6 +71,13 @@ app.post("/api/register", async (req, res) => {
       "INSERT INTO users (nom, email, password) VALUES ($1, $2, $3)",
       [nom, email, hashedPassword],
     );
+
+    const token = jwt.sign({ email: user.email }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    // set cookie
+    res.cookie("token", token, { httpOnly: true });
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
@@ -106,6 +121,10 @@ app.post("/api/login", async (req, res) => {
     const token = jwt.sign({ email: user.email }, JWT_SECRET, {
       expiresIn: "1h",
     });
+
+    // set cookie
+    res.cookie("token", token, { httpOnly: true });
+
     res.status(200).json({ token });
   } catch (error) {
     console.error(error);
