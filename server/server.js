@@ -61,6 +61,11 @@ app.get("/js/dashboard", (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get("/account/add", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "addBankAccount.html");
+  res.sendFile(filePath);
+});
+
 app.get("/js/account/add", (req, res) => {
   const filePath = path.join(__dirname, "..", "src", "addBankAccount.js");
   res.sendFile(filePath);
