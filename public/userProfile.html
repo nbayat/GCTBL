@@ -11,7 +11,7 @@
     <script src="/js/profile"></script>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+<body class="bg-gray-100  text-gray-900 ">
 
     <header class="mb-6">
         <div class="flex items-center justify-between" id="header">
@@ -63,7 +63,7 @@
 
         </div>
         <!-- Formulaire de profil -->
-        <div class="w-full max-w-lg p-6 bg-white shadow-md rounded-lg dark:bg-gray-800">
+        <div class="w-full max-w-lg p-6 bg-white shadow-md rounded-lg ">
             <form name="form" action="" method="GET" class="form-example space-y-6">
                 <!-- Vue d'ensemble -->
                 <div>
@@ -72,25 +72,25 @@
                         <div>
                             <label for="firstname" class="block text-sm font-medium">Prénom</label>
                             <input type="text" name="firstname" id="firstname"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   "
                                 required />
                         </div>
                         <div>
                             <label for="lastname" class="block text-sm font-medium">Nom</label>
                             <input type="text" name="lastname" id="lastname"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   "
                                 required />
                         </div>
                         <div>
                             <label for="email" class="block text-sm font-medium">E-mail</label>
                             <input type="email" name="email" id="email"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   "
                                 required />
                         </div>
                     </div>
                 </div>
 
-                <hr class="border-gray-300 dark:border-gray-600 my-6">
+                <hr class="border-gray-300  my-6">
 
                 <!-- Informations de sécurité -->
                 <!-- <div>
@@ -99,18 +99,18 @@
                         <div>
                             <label for="password" class="block text-sm font-medium">Mot de passe actuel</label>
                             <input type="password" name="password" id="password"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   " />
                         </div>
                         <div>
                             <label for="newPassword" class="block text-sm font-medium">Nouveau mot de passe</label>
                             <input type="password" name="newPassword" id="newPassword"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   " />
                         </div>
                         <div>
                             <label for="confirmNewPassword" class="block text-sm font-medium">Confirmer le nouveau mot
                                 de passe</label>
                             <input type="password" name="confirmNewPassword" id="confirmNewPassword"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   " />
                         </div>
                     </div>
                 </div> -->
@@ -118,37 +118,37 @@
                 <!-- Boutons de gestion -->
                 <div class="flex justify-between mt-6">
                     <button type="button" onclick="editData(event)"
-                        class="text-white bg-[#008250] hover:bg-[#006B3C] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:focus:ring-blue-800">
+                        class="text-white bg-[#008250] hover:bg-[#006B3C] focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5">
                         Enregistrer
                     </button>
                     <button type="button" onclick="reload()"
-                        class="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800">
+                        class="text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5">
                         Annuler
                     </button>
                 </div>
                 <div class="flex justify-center mt-4">
                     <a href="/api/logout" type="button"
-                        class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-900">
+                        class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5">
                         Se déconnecter
                     </a>
                 </div>
             </form>
 
-            <hr class="border-gray-300 dark:border-gray-600 my-6">
+            <hr class="border-gray-300  my-6">
 
             <!-- Historique de connexion et sécurité -->
             <div>
                 <h3 class="text-2xl font-semibold mb-4">Historique de connexion et sécurité</h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-200">
                             <tr>
                                 <th scope="col" class="px-6 py-3">Date</th>
                                 <th scope="col" class="px-6 py-3">Heure</th>
                                 <th scope="col" class="px-6 py-3">Appareil (IP)</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody" class="bg-white dark:bg-gray-800">
+                        <tbody id="tbody" class="bg-white ">
                             <!-- Les entrées d'historique de connexion seront insérées ici -->
                         </tbody>
                     </table>

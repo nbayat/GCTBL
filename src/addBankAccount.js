@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const balanceInput = document.getElementById("balance");
   const typeAccountSelect = document.getElementById("typeAccount"); // New line to get the account type
   const errorContainer = document.createElement("div");
-  errorContainer.className = "mb-4 text-red-600 dark:text-red-400";
+  errorContainer.className = "mb-4 text-red-600";
   form.insertBefore(
     errorContainer,
     form.querySelector(".flex.justify-between"),

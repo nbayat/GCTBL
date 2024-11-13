@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const amountInput = document.getElementById("amount");
   const typeSelect = document.getElementById("type");
   const errorContainer = document.createElement("div");
-  errorContainer.className = "mb-4 text-red-600 dark:text-red-400";
+  errorContainer.className = "mb-4 text-red-600";
   form.insertBefore(
     errorContainer,
     form.querySelector(".flex.justify-between"),
