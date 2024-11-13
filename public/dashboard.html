@@ -4,11 +4,11 @@
 <head>
     <meta charset="utf-8">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+<body class="bg-gray-100 text-gray-900">
 
     <!-- En-tête -->
     <header class="mb-6">
@@ -39,7 +39,7 @@
 
             <!-- Bouton Ajouter un compte bancaire -->
             <form action="addBankAccount.html">
-                <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-900 mt-4">
+                <button type="submit" class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-4">
                     Ajouter un compte bancaire
                 </button>
             </form>
@@ -51,15 +51,15 @@
 
             <!-- Tableau des comptes -->
             <div class="overflow-x-auto mt-6">
-                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+                <table class="w-full text-sm text-left text-gray-500 ">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-200 ">
                         <tr>
                             <th scope="col" class="px-6 py-3">Nom de compte</th>
                             <th scope="col" class="px-6 py-3">Solde actuel</th>
                             <th scope="col" class="px-6 py-3">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody" class="bg-white dark:bg-gray-800">
+                    <tbody id="tbody" class="bg-white">
                         <!-- Les comptes bancaires seront insérés ici -->
                     </tbody>
                 </table>
