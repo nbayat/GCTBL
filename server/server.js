@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const cookieParser = require("cookie-parser");
+const Papa = require("papaparse");
 
 // Creating an Express application instance
 const app = express();
@@ -188,7 +189,7 @@ app.post("/api/register", async (req, res) => {
     );
 
     // Generate JWT token
-    const token = jwt.sign({ email: email }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ email: email }, JWT_SECRET, { expiresIn: "24h" });
 
     // Set cookie
     res.cookie("token", token, { httpOnly: true });
@@ -248,7 +249,7 @@ app.post("/api/login", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ email: user.email }, JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "24h",
     });
 
     // Set cookie with the token
@@ -305,21 +306,16 @@ app.get("/", (req, res) => {
   res.send("Welcome to my User Registration and Login API!");
 });
 
-// ###########
-
-// Middleware to get user from JWT token in cookies
 // Middleware to get user from JWT token in cookies
 async function getUserFromToken(req, res, next) {
-  const token = req.cookies.token; // Get token from cookies
+  const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const userEmail = decoded.email; // Get user email from decoded token
-    console.log("Decoded token:", decoded); // Debugging line
-    console.log("User email:", userEmail); // Debugging line
+    const userEmail = decoded.email;
 
     const client = await pool.connect();
     const userResult = await client.query(
@@ -333,18 +329,16 @@ async function getUserFromToken(req, res, next) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    req.userId = user.id; // Attach userId to the request
+    req.userId = user.id; // Attach the user ID to the request
     next();
   } catch (error) {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 }
 
-// New Route: Get all transactions for an account as CSV
-app.get("/api/transaction/csv", getUserFromToken, async (req, res) => {
+// New Route: Get all transactions for the user as CSV
+app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
   const userId = req.userId;
-
-  console.log("Accounts result:", userId); // Debugging line
 
   try {
     const client = await pool.connect();
@@ -355,11 +349,12 @@ app.get("/api/transaction/csv", getUserFromToken, async (req, res) => {
       [userId],
     );
 
-    console.log("Accounts result:", userId); // Debugging line
-
-    // If no accounts are found for the user, return an error
+    // If no accounts are found for the user, return an empty CSV
     if (accountsResult.rows.length === 0) {
-      return res.status(404).json({ error: "No accounts found for this user" });
+      const emptyCSV = Papa.unparse([]); // Create an empty CSV
+      res.header("Content-Type", "text/csv");
+      res.attachment("transactions.csv");
+      return res.send(emptyCSV); // Send empty CSV file
     }
 
     // Extract all account IDs
@@ -376,10 +371,12 @@ app.get("/api/transaction/csv", getUserFromToken, async (req, res) => {
 
     const transactions = transactionsResult.rows;
 
+    // If no transactions are found, return an empty CSV
     if (transactions.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No transactions found for the user" });
+      const emptyCSV = Papa.unparse([]); // Create an empty CSV
+      res.header("Content-Type", "text/csv");
+      res.attachment("transactions.csv");
+      return res.send(emptyCSV); // Send empty CSV file
     }
 
     // Convert the data to CSV format using PapaParse
