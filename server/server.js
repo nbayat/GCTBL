@@ -19,7 +19,6 @@ const pool = new Pool({
 });
 
 // Middleware to parse JSON bodies
-// app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser()); // This should be set before your routes
@@ -56,8 +55,18 @@ app.get("/dashboard", (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get("/account/add", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "addBankAccount.html");
+  res.sendFile(filePath);
+});
+
 app.get("/js/dashboard", (req, res) => {
   const filePath = path.join(__dirname, "..", "src", "dashboard.js");
+  res.sendFile(filePath);
+});
+
+app.get("/js/account/add", (req, res) => {
+  const filePath = path.join(__dirname, "..", "server", "addBankAccount.js");
   res.sendFile(filePath);
 });
 
@@ -419,28 +428,57 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
 });
 
 // API to add a new account
-app.post("/api/account/add", getUserFromToken, async (req, res) => {
-  const { name, type, lowSale, balance } = req.body;
-  const userId = req.userId;
-
-  if (!name || !type || lowSale === undefined || balance === undefined) {
-    return res.status(400).json({ error: "Missing required fields" });
+app.post("/api/accounts/add", async (req, res) => {
+  // 1. Get the token from cookies
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
   }
 
   try {
+    // 2. Verify and decode the JWT token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email; // Assuming email is encoded in the token
+
+    // 3. Get user ID from the database using the decoded email
     const client = await pool.connect();
+    const userResult = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [userEmail],
+    );
+    const user = userResult.rows[0];
+    if (!user) {
+      client.release();
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = user.id;
+
+    // 4. Extract account data from request body
+    const { name, type, lowSale, balance } = req.body;
+
+    if (!name || !type || lowSale === undefined || balance === undefined) {
+      client.release();
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // 5. Insert the new account into the 'accounts' table
     const result = await client.query(
       "INSERT INTO accounts (name, type, lowSale, balance, userId) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       [name, type, lowSale, balance, userId],
     );
-    client.release();
 
     const newAccount = result.rows[0];
-    return res
-      .status(201)
-      .json({ message: "Account created successfully", account: newAccount });
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to create account" });
+
+    // 6. Respond with the created account details
+    client.release();
+    return res.status(201).json({
+      message: "Account successfully created",
+      account: newAccount,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
