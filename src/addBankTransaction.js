@@ -13,50 +13,71 @@ document.addEventListener("DOMContentLoaded", function () {
   const urlParams = new URLSearchParams(window.location.search);
   const accountId = urlParams.get("id"); // Fetch the `id` from the URL parameters
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    let errors = [];
-
-    // Validate amount
-    const amount = parseFloat(amountInput.value);
-    if (isNaN(amount) || amount <= 0) {
-      errors.push("Le montant doit être un nombre positif.");
+  fetch('api/accounts/getById?accountId=' + accountId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
     }
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data) {
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          let errors = [];
 
-    // Display errors or proceed
-    if (errors.length > 0) {
-      errorContainer.innerHTML = errors.join("<br>");
-    } else {
-      errorContainer.innerHTML = ""; // Clear previous errors
+          // Validate amount
+          const amount = parseFloat(amountInput.value);
+          if (isNaN(amount) || amount <= 0) {
+            errors.push("Le montant doit être un nombre positif.");
+          }
 
-      // Prepare the data to send
-      const transactionData = {
-        type: typeSelect.value,
-        amount: amount,
-        accountId: accountId, // Include the accountId from the URL
-      };
+          // Display errors or proceed
+          if (errors.length > 0) {
+            errorContainer.innerHTML = errors.join("<br>");
+          } else {
+            errorContainer.innerHTML = ""; // Clear previous errors
 
-      try {
-        // Make the API call to add the transaction
-        const response = await fetch("/api/transactions/add", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(transactionData),
+            let amountByType = 0;
+            if (typeSelect.value == "deposit") amountByType = amount;
+            else if (typeSelect.value == "withdrawal") amountByType = (amount * (-1));
+
+            // Prepare the data to send
+            const transactionData = {
+              type: typeSelect.value,
+              amount: amountByType,
+              accountId: accountId, // Include the accountId from the URL
+            };
+
+            try {
+              // Make the API call to add the transaction
+              const response = await fetch("/api/transactions/add", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(transactionData),
+              });
+
+              if (response.ok) {
+                if (((data.account.balance - amountByType) < data.account.lowsale) && typeSelect.value == "withdrawal")localStorage.setItem("warningMessage", "Votre solde est inférieur au seuil défini. Veuillez recharger votre compte.");
+                  window.location.href = "/history?id=" + accountId;
+              } else {
+                // Display error message if the API call fails
+                errorContainer.innerHTML =
+                  "Erreur lors de l'ajout de la transaction.";
+              }
+            } catch (error) {
+              errorContainer.innerHTML = "Erreur de connexion au serveur.";
+            }
+          }
         });
-
-        if (response.ok) {
-          // Redirect to /history?id=3
-          window.location.href = "/history?id=" + accountId;
-        } else {
-          // Display error message if the API call fails
-          errorContainer.innerHTML =
-            "Erreur lors de l'ajout de la transaction.";
-        }
-      } catch (error) {
-        errorContainer.innerHTML = "Erreur de connexion au serveur.";
+        // Remplir le formulaire avec les données de l'utilisateur
+      } else {
+        console.error('Utilisateur non trouvé ou données manquantes');
       }
-    }
-  });
+    })
+    .catch(error => {
+      console.error('Erreur lors de la récupération des données utilisateur:', error);
+    });
 });

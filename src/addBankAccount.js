@@ -63,7 +63,6 @@ document.addEventListener("DOMContentLoaded", function () {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data.message);
           if (data.message === "Account created successfully") {
             // Redirect to dashboard after successful account creation
             localStorage.setItem("successMessage", "Votre compte a été créé avec succès.");

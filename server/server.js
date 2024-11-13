@@ -96,6 +96,12 @@ app.get("/homepage", (req, res) => {
   res.sendFile(filePath);
 });
 
+
+app.get('/', (req, res) => {
+  res.redirect('/homepage');  // Redirige vers /homepage pour toute route non trouvée
+});
+
+
 app.get("/api/user/connections", async (req, res) => {
   let client;
 
@@ -155,7 +161,6 @@ app.get("/transactions", (req, res) => {
 
 app.get("/js/transactions", (req, res) => {
   const filePath = path.join(__dirname, "..", "src", "addBankTransaction.js");
-  console.log(filePath);
   res.sendFile(filePath);
 });
 
@@ -462,8 +467,8 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Query to find all transactions related to the user's accounts
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
-        "FROM transactions t " +
-        "WHERE t.accountId = ANY($1)",
+      "FROM transactions t " +
+      "WHERE t.accountId = ANY($1)",
       [accountIds],
     );
     client.release();
@@ -626,13 +631,72 @@ app.get("/api/accounts/getAll", async (req, res) => {
   }
 });
 
+app.get("/api/accounts/getById", async (req, res) => {
+  try {
+    // Vérification du token dans les cookies
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    // Vérification et décodage du token JWT
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    // Connexion à la base de données
+    const client = await pool.connect();
+    try {
+      // Récupération de l'ID utilisateur via l'email du token décodé
+      const userResult = await client.query(
+        "SELECT id FROM users WHERE email = $1",
+        [userEmail]
+      );
+      const user = userResult.rows[0];
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Récupération de l'ID du compte depuis les paramètres de la requête
+      const { accountId } = req.query; // `accountId` dans les paramètres de la requête
+
+      if (!accountId) {
+        return res.status(400).json({ error: "Account ID is required" });
+      }
+
+      // Récupération des informations du compte à partir de l'ID
+      const accountResult = await client.query(
+        "SELECT id, name, type, lowSale, balance FROM accounts WHERE userId = $1 AND id = $2",
+        [user.id, accountId]
+      );
+
+      const account = accountResult.rows[0];
+      if (!account) {
+        return res.status(404).json({ error: "Account not found" });
+      }
+
+      // Réponse avec les informations du compte
+      res.status(200).json({ account });
+
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error in /api/accounts/getById:", error);
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    res
+      .status(500)
+      .json({ error: "An error occurred while retrieving the account" });
+  }
+});
+
 // API to add a transaction
 app.post("/api/transactions/add", async (req, res) => {
   const { type, amount, accountId } = req.body; // Get transaction data from the request body
-
-  console.log("type", type);
-  console.log("amount", amount);
-  console.log("accountId", accountId);
 
   // Check if all necessary fields are provided
   if (!type || !amount || !accountId) {
@@ -680,8 +744,8 @@ app.post("/api/transactions/add", async (req, res) => {
     // Insert the transaction into the database
     const transactionResult = await client.query(
       "INSERT INTO transactions (type, amount, balance, accountId) " +
-        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
-        "RETURNING id, type, amount, balance, accountId",
+      "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
+      "RETURNING id, type, amount, balance, accountId",
       [type, amount, accountId],
     );
 
@@ -758,8 +822,6 @@ app.post("/api/transactions/getAll", async (req, res) => {
         .json({ message: "No transactions found for this account." });
     }
 
-    console.log("transactionResult", transactionResult.rows);
-
     // Return the transactions
     return res.json({ transactions: transactionResult.rows });
   } catch (error) {
@@ -777,3 +839,14 @@ app.post("/api/transactions/getAll", async (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
+
+
+function redirectToHomepage(req, res, next) {
+  if (req.url === '/') {
+    res.redirect('/homepage');
+  } else {
+    next();
+  }
+}
+
+app.use(redirectToHomepage);

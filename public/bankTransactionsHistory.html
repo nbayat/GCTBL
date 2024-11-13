@@ -40,7 +40,7 @@
     </header>
 
     <div id="notification"
-        class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 mx-auto w-1/2 flex justify-between items-center"
+        class="hidden bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4 mx-auto w-1/2 flex justify-between items-center"
         role="alert">
         <span class="block sm:inline" id="notification-message"></span>
         <button type="button" class="text-green-700 hover:text-green-900" onclick="closeNotification()">
@@ -58,7 +58,7 @@
         </a>
 
         <!-- Titre de la page -->
-        <h2 class="text-4xl font-extrabold">Historique des transactions</h2>
+        <h2 class="text-4xl font-extrabold" id="accountTitle">Historique des transactions</h2>
 
         <!-- Boutons d'actions : Exporter et Ajouter une transaction -->
         <div class="flex space-x-4">
@@ -76,6 +76,16 @@
                     Ajouter une transaction
                 </button>
             </a>
+        </div>
+
+
+        <div class="flex space-x-4">
+            <div>
+                <p id="balance"></p>
+            </div>
+            <div>
+                <p id="lowSale"></p>
+            </div>
         </div>
 
         <!-- Tableau d'historique des transactions -->

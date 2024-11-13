@@ -11,9 +11,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const tbody = document.getElementById("tbody");
   const sortByElem = document.getElementById("sortBy");
   const filterPeriodElem = document.getElementById("filterPeriod");
-  
+
   // Initial data container for transactions
   let transactionsData = [];
+
+  if (localStorage.getItem("warningMessage")) {
+    document.getElementById("notification-message").textContent = localStorage.getItem("warningMessage");;
+    notification.classList.remove("hidden");
+    setTimeout(closeNotification, 4000);
+  }
 
   // Function to get URL parameter
   function getUrlParameter(name) {
@@ -29,6 +35,27 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("No account ID provided in URL");
         return;
       }
+
+      fetch('api/accounts/getById?accountId=' + accountId, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data) {
+            document.getElementById("accountTitle").innerHTML = "Historique des transactions de " + data.account.name;
+            document.getElementById("balance").innerHTML = "Solde : " + data.account.balance + " €";
+            document.getElementById("lowSale").innerHTML = "Solde bas : " + data.account.lowsale + " €";
+            // Remplir le formulaire avec les données de l'utilisateur
+          } else {
+            console.error('Utilisateur non trouvé ou données manquantes');
+          }
+        })
+        .catch(error => {
+          console.error('Erreur lors de la récupération des données utilisateur:', error);
+        });
 
       const response = await fetch("/api/transactions/getAll", {
         method: "POST",
@@ -136,19 +163,19 @@ document.addEventListener("DOMContentLoaded", function () {
         dateCell.textContent = transactionDate.toLocaleDateString(); // Format date as you need
 
         const typeCell = document.createElement("td");
-        typeCell.textContent = transaction.type;
+        let formattedType = ""
+        if (transaction.type == "deposit") formattedType = "Dépôt";
+        else if (transaction.type == "withdrawal") formattedType = "Retrait";
+        typeCell.textContent = formattedType;
 
         const amountCell = document.createElement("td");
 
-        console.log("amount " + transaction.type);
-        console.log(transaction);
-
         // Check if transaction type is 'deposit' or 'withdrawal'
         if (transaction.type === "deposit") {
-          amountCell.textContent = `+€${transaction.amount}`;
+          amountCell.textContent = `+${transaction.amount} €`;
           amountCell.style.color = "green";
         } else if (transaction.type === "withdrawal") {
-          amountCell.textContent = `-€${transaction.amount}`;
+          amountCell.textContent = `-${Math.abs(transaction.amount)} €`;
           amountCell.style.color = "red";
         } else {
           amountCell.textContent = `-`;
@@ -169,6 +196,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function closeNotification() {
+    document.getElementById("notification").classList.add("hidden");
+  }
   // Set default sort and filter options
   sortByElem.value = "date";
   filterPeriodElem.value = "all"; // Show all transactions by default
