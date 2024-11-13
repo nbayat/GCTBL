@@ -54,6 +54,11 @@ app.get("/dashboard", (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get("/js/dashboard", (req, res) => {
+  const filePath = path.join(__dirname, "..", "server", "dashboard.js");
+  res.sendFile(filePath);
+});
+
 app.get("/history", (req, res) => {
   const filePath = path.join(
     __dirname,
@@ -295,7 +300,201 @@ app.get("/", (req, res) => {
   res.send("Welcome to my User Registration and Login API!");
 });
 
+// ###########
+
+// Middleware to get user from JWT token in cookies
+// Middleware to get user from JWT token in cookies
+async function getUserFromToken(req, res, next) {
+  const token = req.cookies.token; // Get token from cookies
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email; // Get user email from decoded token
+    console.log("Decoded token:", decoded); // Debugging line
+    console.log("User email:", userEmail); // Debugging line
+
+    const client = await pool.connect();
+    const userResult = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [userEmail],
+    );
+    const user = userResult.rows[0];
+    client.release();
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    req.userId = user.id; // Attach userId to the request
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+}
+
+// New Route: Get all transactions for an account as CSV
+app.get("/api/transaction/csv", getUserFromToken, async (req, res) => {
+  const userId = req.userId;
+
+  console.log("Accounts result:", userId); // Debugging line
+
+  try {
+    const client = await pool.connect();
+
+    // Query to find all accounts belonging to the user
+    const accountsResult = await client.query(
+      "SELECT id FROM accounts WHERE userId = $1",
+      [userId],
+    );
+
+    console.log("Accounts result:", userId); // Debugging line
+
+    // If no accounts are found for the user, return an error
+    if (accountsResult.rows.length === 0) {
+      return res.status(404).json({ error: "No accounts found for this user" });
+    }
+
+    // Extract all account IDs
+    const accountIds = accountsResult.rows.map((account) => account.id);
+
+    // Query to find all transactions related to the user's accounts
+    const transactionsResult = await client.query(
+      "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
+        "FROM transactions t " +
+        "WHERE t.accountId = ANY($1)",
+      [accountIds],
+    );
+    client.release();
+
+    const transactions = transactionsResult.rows;
+
+    if (transactions.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No transactions found for the user" });
+    }
+
+    // Convert the data to CSV format using PapaParse
+    const csv = Papa.unparse(transactions);
+
+    // Set headers to indicate the response is CSV
+    res.header("Content-Type", "text/csv");
+    res.attachment("transactions.csv"); // Optional: Set the filename for download
+    res.send(csv); // Send the CSV content as the response
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+// API to add a new account
+app.post("/api/account/add", getUserFromToken, async (req, res) => {
+  const { name, type, lowSale, balance } = req.body;
+  const userId = req.userId;
+
+  if (!name || !type || lowSale === undefined || balance === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "INSERT INTO accounts (name, type, lowSale, balance, userId) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [name, type, lowSale, balance, userId],
+    );
+    client.release();
+
+    const newAccount = result.rows[0];
+    return res
+      .status(201)
+      .json({ message: "Account created successfully", account: newAccount });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to create account" });
+  }
+});
+
+// API to remove an account
+app.post("/api/account/remove", getUserFromToken, async (req, res) => {
+  const { accountId } = req.body;
+  const userId = req.userId;
+
+  if (!accountId) {
+    return res.status(400).json({ error: "Missing account ID" });
+  }
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "DELETE FROM accounts WHERE id = $1 AND userId = $2 RETURNING *",
+      [accountId, userId],
+    );
+    client.release();
+
+    const deletedAccount = result.rows[0];
+    if (!deletedAccount) {
+      return res
+        .status(404)
+        .json({ error: "Account not found or does not belong to user" });
+    }
+
+    return res.status(200).json({
+      message: "Account removed successfully",
+      account: deletedAccount,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to remove account" });
+  }
+});
+
+// API to add a transaction
+app.post("/api/transaction/add", getUserFromToken, async (req, res) => {
+  const { type, amount, balance, accountId } = req.body;
+  const userId = req.userId;
+
+  if (!type || !amount || !balance || !accountId) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "INSERT INTO transactions (type, amount, balance, accountId) VALUES ($1, $2, $3, $4) RETURNING *",
+      [type, amount, balance, accountId],
+    );
+    client.release();
+
+    const newTransaction = result.rows[0];
+    return res.status(201).json({
+      message: "Transaction added successfully",
+      transaction: newTransaction,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to add transaction" });
+  }
+});
+
+// API to get all transactions for the user
+app.post("/api/transaction/list", getUserFromToken, async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "SELECT * FROM transactions t JOIN accounts a ON t.accountId = a.id WHERE a.userId = $1",
+      [userId],
+    );
+    client.release();
+
+    const transactions = result.rows;
+    return res.status(200).json({ transactions });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
 });
