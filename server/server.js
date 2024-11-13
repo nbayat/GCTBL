@@ -41,7 +41,7 @@ const verifyToken = (req, res, next) => {
 
 app.get("/login", (req, res) => {
   const filePath = path.join(__dirname, "..", "public", "login.html");
-  res.sendFile;
+  res.sendFile(filePath);
 });
 
 app.get("/register", (req, res) => {
