@@ -59,3 +59,73 @@ xhr.onreadystatechange = function () {
 
 // Send the request
 xhr.send();
+
+function loadUserData() {
+    fetch('/api/user', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.user && data.user.nom && data.user.email) {
+                // Remplir le formulaire avec les données de l'utilisateur
+                document.getElementById('firstname').value = data.user.nom.split(' ')[0];
+                document.getElementById('lastname').value = data.user.nom.split(' ')[1];
+                document.getElementById('email').value = data.user.email;
+            } else {
+                console.error('Utilisateur non trouvé ou données manquantes');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération des données utilisateur:', error);
+        });
+}
+
+// Appeler la fonction pour charger les données au chargement de la page
+document.addEventListener("DOMContentLoaded", loadUserData);
+
+// Gérer la soumission du formulaire pour mettre à jour les informations
+function editData(event) {
+    event.preventDefault(); // Empêche le rafraîchissement de la page
+
+    const firstname = document.getElementById('firstname').value;
+    const lastname = document.getElementById('lastname').value;
+    const email = document.getElementById('email').value;
+
+    // Envoi de la requête PUT pour mettre à jour les informations
+    fetch('/api/user/update', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            firstname: firstname,
+            lastname: lastname,
+            email: email,
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Optionnellement, recharger les données utilisateur
+                document.getElementById("notification-message").textContent = "Vos informations personnelles ont bien été modifiées.";
+                notification.classList.remove("hidden");
+                setTimeout(closeNotification, 4000);
+                loadUserData();
+            } else {
+                alert('Erreur lors de la mise à jour des informations');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la mise à jour des informations utilisateur:', error);
+        });
+}
+function reload() {
+    window.location.reload();
+}
+
+function closeNotification() {
+    document.getElementById("notification").classList.add("hidden");
+}

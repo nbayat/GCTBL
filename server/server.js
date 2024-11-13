@@ -307,21 +307,35 @@ app.get("/api/logout", (req, res) => {
 });
 
 // Protected route to get user details
-app.get("/api/user", verifyToken, async (req, res) => {
-  let client; // Declare the client variable
+app.get("/api/user", async (req, res) => {
+  const token = req.cookies.token; // Get token from cookies
+  let client;
+  // Check if the token exists
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
 
   try {
+    // Verify and decode the JWT token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    let client; // Declare the client variable
+
+    // Connect to the database
     client = await pool.connect();
 
-    // Fetch user details using the decoded token
+    // Fetch user details using the decoded token's email
     const result = await client.query("SELECT * FROM users WHERE email = $1", [
-      req.user.email,
+      userEmail,
     ]);
     const user = result.rows[0];
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.status(200).json({ email: user.email });
+
+    res.status(200).json({ user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -330,6 +344,39 @@ app.get("/api/user", verifyToken, async (req, res) => {
     if (client) {
       client.release();
     }
+  }
+});
+
+app.put("/api/user/update", async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    const { firstname, lastname, email } = req.body;
+
+    // Valider que les champs sont bien présents
+    if (!firstname || !lastname || !email) {
+      return res.status(400).json({ error: "Tous les champs sont requis" });
+    }
+
+    const client = await pool.connect();
+
+    // Mettre à jour les données de l'utilisateur
+    await client.query(
+      `UPDATE users SET nom = $1, email = $2 WHERE email = $3`,
+      [firstname + ' ' + lastname, email, userEmail]
+    );
+
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
 
