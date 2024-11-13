@@ -18,6 +18,10 @@ xhr.onreadystatechange = function () {
                 document.getElementById('ip-check-result').textContent = 'Attention : Les deux dernières adresses IP sont différentes.';
             }
         }
+        else if (data.connections.length < 1) {
+            tbody.innerHTML =
+                '<tr><td colspan="3" class="text-center">Pas de session actuellement</td></tr>';
+        }
 
         // Loop through the connections and append rows to the table
         data.connections.forEach(function (connection) {
