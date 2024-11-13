@@ -57,7 +57,7 @@ app.get("/dashboard", (req, res) => {
 });
 
 app.get("/js/dashboard", (req, res) => {
-  const filePath = path.join(__dirname, "..", "server", "dashboard.js");
+  const filePath = path.join(__dirname, "..", "src", "dashboard.js");
   res.sendFile(filePath);
 });
 
@@ -75,7 +75,7 @@ app.get("/js/history", (req, res) => {
   const filePath = path.join(
     __dirname,
     "..",
-    "server",
+    "src",
     "bankTransactionsHistory.js",
   );
   res.sendFile(filePath);
@@ -138,13 +138,34 @@ app.get("/transactions", (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get("/js/transactions", (req, res) => {
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "src",
+    "addBankTransaction.js",
+  );
+  res.sendFile(filePath);
+});
+
+
 app.get("/profile", (req, res) => {
   const filePath = path.join(__dirname, "..", "public", "userProfile.html");
   res.sendFile(filePath);
 });
 
+app.get("/js/profile", (req, res) => {
+  const filePath = path.join(__dirname, "..", "src", "userProfile.js");
+  res.sendFile(filePath);
+});
+
 app.get("/add", (req, res) => {
   const filePath = path.join(__dirname, "..", "public", "addBankAccount.html");
+  res.sendFile(filePath);
+});
+
+app.get("/js/add", (req, res) => {
+  const filePath = path.join(__dirname, "..", "src", "addBankAccount.js");
   res.sendFile(filePath);
 });
 

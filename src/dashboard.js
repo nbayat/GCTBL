@@ -53,6 +53,10 @@ document.addEventListener("DOMContentLoaded", function () {
         nameCell.className = "px-6 py-3";
         nameCell.textContent = account.name;
 
+        const typeCell = document.createElement("td");
+        typeCell.className = "px-6 py-3";
+        typeCell.textContent = account.type;
+
         // Low sale
         const lowSaleCell = document.createElement("td");
         lowSaleCell.className = "px-6 py-3";
@@ -64,9 +68,6 @@ document.addEventListener("DOMContentLoaded", function () {
         balanceCell.textContent = `€${account.balance.toFixed(2)}`;
 
         // Account type
-        const typeCell = document.createElement("td");
-        typeCell.className = "px-6 py-3";
-        typeCell.textContent = account.type;
 
                 // Actions
                 const actionsCell = document.createElement("td");
