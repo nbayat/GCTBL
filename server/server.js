@@ -91,6 +91,11 @@ app.get("/js/history", (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get("/homepage", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "homepage.html");
+  res.sendFile(filePath);
+});
+
 app.get("/api/user/connections", async (req, res) => {
   let client;
 
@@ -277,7 +282,8 @@ app.post("/api/login", async (req, res) => {
     // Set cookie with the token
     res.cookie("token", token, { httpOnly: true });
 
-    res.status(200).json({ token });
+    // res.status(200).json({ token });
+    res.redirect("/dashboard");
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -293,7 +299,9 @@ app.get("/api/logout", (req, res) => {
   // Clear the "token" cookie by setting it to an empty value and an expired date
   res.clearCookie("token", { httpOnly: true, sameSite: "Strict" });
 
-  res.status(200).json({ message: "User logged out successfully" });
+  res.redirect("/homepage");
+
+  // res.status(200).json({ message: "User logged out successfully" });
 });
 
 // Protected route to get user details
@@ -321,11 +329,6 @@ app.get("/api/user", verifyToken, async (req, res) => {
       client.release();
     }
   }
-});
-
-// Default route
-app.get("/", (req, res) => {
-  res.send("Welcome to my User Registration and Login API!");
 });
 
 // Middleware to get user from JWT token in cookies
@@ -553,29 +556,76 @@ app.get("/api/accounts/getAll", async (req, res) => {
 });
 
 // API to add a transaction
-app.post("/api/transaction/add", getUserFromToken, async (req, res) => {
-  const { type, amount, balance, accountId } = req.body;
-  const userId = req.userId;
+app.post("/api/transactions/add", async (req, res) => {
+  const { type, amount, accountId } = req.body; // Get transaction data from the request body
 
-  if (!type || !amount || !balance || !accountId) {
-    return res.status(400).json({ error: "Missing required fields" });
+  // Check if all necessary fields are provided
+  if (!type || !amount || !accountId) {
+    return res.status(400).json({ error: "Missing transaction data" });
+  }
+
+  // Check for the token in cookies
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
   }
 
   try {
+    // Verify and decode the JWT token
+    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT_SECRET
+    const userEmail = decoded.email; // Assume the email was encoded in the token
+
+    // Get the user ID using the email from the decoded token
     const client = await pool.connect();
-    const result = await client.query(
-      "INSERT INTO transactions (type, amount, balance, accountId) VALUES ($1, $2, $3, $4) RETURNING *",
-      [type, amount, balance, accountId],
+    const userResult = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [userEmail],
     );
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = user.id;
+
+    // Validate if the account exists and belongs to the user
+    const accountResult = await client.query(
+      "SELECT id FROM accounts WHERE id = $1 AND userId = $2",
+      [accountId, userId],
+    );
+
+    const account = accountResult.rows[0];
+    if (!account) {
+      return res
+        .status(404)
+        .json({ error: "Account not found or does not belong to the user" });
+    }
+
+    // Insert the transaction into the database
+    const transactionResult = await client.query(
+      "INSERT INTO transactions (type, amount, balance, accountId) " +
+        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
+        "RETURNING id, type, amount, balance, accountId",
+      [type, amount, accountId],
+    );
+
+    const transaction = transactionResult.rows[0];
+
+    // Update account balance (assuming transactions affect the balance)
+    await client.query(
+      "UPDATE accounts SET balance = balance + $1 WHERE id = $2",
+      [amount, accountId],
+    );
+
+    // Close the database connection
     client.release();
 
-    const newTransaction = result.rows[0];
-    return res.status(201).json({
-      message: "Transaction added successfully",
-      transaction: newTransaction,
-    });
+    // Return the newly created transaction
+    return res.status(201).json({ transaction });
   } catch (error) {
-    return res.status(500).json({ error: "Failed to add transaction" });
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

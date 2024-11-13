@@ -3,46 +3,43 @@ document.addEventListener("DOMContentLoaded", function () {
   const sortByElem = document.getElementById("sortBy");
   const filterPeriodElem = document.getElementById("filterPeriod");
 
-  // Function to fetch transactions from the API
+  // Initial data container for transactions
+  let transactionsData = [];
+
+  // Function to fetch transactions from the API (GET method)
   async function fetchTransactions() {
     try {
+      // Making a GET request to the API
       const response = await fetch("/api/transactions/getAll", {
-        method: "GET", // Change this to GET if your API uses GET method
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // Add other headers here if needed (like Authorization if required)
         },
-        // Include additional body if needed (e.g., for POST requests)
       });
-
-      // Check if the response is ok (status 200-299)
-      if (!response.ok) {
-        throw new Error("Failed to fetch transactions");
-      }
-
-      // Parse the response as JSON
       const data = await response.json();
 
-      console.log(data);
-
-      // Return the list of transactions
-      return data.transactions || [];
+      if (response.ok) {
+        transactionsData = data.transactions || [];
+        displayTransactions();
+      } else {
+        console.error("Error fetching transactions:", data.error);
+        // You can display an error message to the user here
+      }
     } catch (error) {
-      console.error("Error fetching transactions:", error);
-      return []; // Return empty array on error
+      console.error("Fetch error:", error);
     }
   }
 
-  // Function for filtering transactions by period
-  function filterByPeriod(transactions, period) {
+  // Function to filter transactions by period
+  function filterByPeriod(period) {
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set to midnight to ignore time part
+    now.setHours(0, 0, 0, 0); // Reset to midnight to ignore time
 
-    return transactions.filter((transaction) => {
-      const transactionDate = new Date(transaction.date);
+    return transactionsData.filter((transaction) => {
+      const transactionDate = new Date(transaction.transaction_date);
       const diffInDays = (now - transactionDate) / (1000 * 3600 * 24);
 
-      // If the period is 'all', include all transactions
+      // If the selected period is 'all', include all transactions
       if (period === "all") return true;
 
       // Filter by selected period (7, 30, 90 days)
@@ -51,81 +48,100 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Function to sort transactions by type or date
-  function sortTransactions(transactions, sortBy) {
-    return transactions.sort((a, b) => {
+  function sortTransactions(sortBy) {
+    return transactionsData.sort((a, b) => {
       if (sortBy === "type") {
         return a.type.localeCompare(b.type); // Sort by type
       } else if (sortBy === "date") {
-        return new Date(b.date) - new Date(a.date); // Sort by date
+        const dateA = new Date(a.transaction_date);
+        const dateB = new Date(b.transaction_date);
+        return dateB - dateA; // Sort by date, descending
       }
     });
   }
 
-  // Function to display transactions in the table
-  async function displayTransactions() {
-    // Fetch the transactions from the API
-    const transactionsData = await fetchTransactions();
+  // Function to safely parse date
+  function parseDate(dateString) {
+    const parsedDate = new Date(dateString);
 
-    // Filter transactions according to the selected period
-    const filteredTransactions = filterByPeriod(
-      transactionsData,
-      filterPeriodElem.value,
-    );
+    // Check if the date is valid
+    if (isNaN(parsedDate)) {
+      console.error("Invalid Date:", dateString);
+      return new Date(); // Return current date if invalid
+    }
 
-    // Sort the transactions based on the selected criteria
-    const sortedTransactions = sortTransactions(
-      filteredTransactions,
-      sortByElem.value,
-    );
+    return parsedDate;
+  }
 
-    // Clear the existing table contents
+  // Display the transactions in the table
+  function displayTransactions() {
+    // Filter transactions based on the selected period
+    const filteredTransactions = filterByPeriod(filterPeriodElem.value);
+
+    // Sort transactions based on the selected sort option
+    const sortedTransactions = sortTransactions(sortByElem.value);
+
+    // Clear current content in the table body
     tbody.innerHTML = "";
 
-    if (sortedTransactions.length === 0) {
+    if (filteredTransactions.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="4" class="text-center">Pas de données pour la période sélectionnée</td></tr>';
+        '<tr><td colspan="4" class="text-center">No data available for the selected period</td></tr>';
     } else {
       sortedTransactions.forEach((transaction) => {
-        const row = document.createElement("tr");
+        // Display transaction if it is in the filtered period
+        if (filteredTransactions.includes(transaction)) {
+          const row = document.createElement("tr");
 
-        const dateCell = document.createElement("td");
-        dateCell.textContent = transaction.date;
+          // Create cells for date, type, amount, and balance
+          const dateCell = document.createElement("td");
+          const transactionDate = parseDate(transaction.transaction_date);
+          dateCell.textContent = transactionDate.toLocaleDateString(); // Format date as you need
 
-        const typeCell = document.createElement("td");
-        typeCell.textContent = transaction.type;
+          const typeCell = document.createElement("td");
+          typeCell.textContent = transaction.type;
 
-        const amountCell = document.createElement("td");
+          const amountCell = document.createElement("td");
 
-        // Add sign (+ or -) and color the amount
-        if (transaction.type === "Dépôt") {
-          amountCell.textContent = `+€${transaction.amount.toFixed(2)}`;
-          amountCell.style.color = "green";
-        } else if (transaction.type === "Retrait") {
-          amountCell.textContent = `-€${transaction.amount.toFixed(2)}`;
-          amountCell.style.color = "red";
+          // Debugging: Log the transaction data and check type and amount
+          console.log("Transaction type:", transaction.type);
+          console.log("Transaction amount:", transaction.amount);
+
+          // Check if transaction type is either 'Dépôt' or 'Retrait' and set amount
+          if (transaction.type === "Dépôt") {
+            amountCell.textContent = `+€${transaction.amount.toFixed(2)}`;
+            amountCell.style.color = "green";
+          } else if (transaction.type === "Retrait") {
+            amountCell.textContent = `-€${transaction.amount.toFixed(2)}`;
+            amountCell.style.color = "red";
+          } else {
+            console.error("Unexpected transaction type:", transaction.type);
+          }
+
+          const balanceCell = document.createElement("td");
+          balanceCell.textContent = `€${transaction.balance.toFixed(2)}`;
+
+          // Append cells to the row
+          row.appendChild(dateCell);
+          row.appendChild(typeCell);
+          row.appendChild(amountCell);
+          row.appendChild(balanceCell);
+
+          // Append row to the table body
+          tbody.appendChild(row);
         }
-
-        const balanceCell = document.createElement("td");
-        balanceCell.textContent = `€${transaction.balance.toFixed(2)}`;
-
-        row.appendChild(dateCell);
-        row.appendChild(typeCell);
-        row.appendChild(amountCell);
-        row.appendChild(balanceCell);
-
-        tbody.appendChild(row);
       });
     }
   }
 
-  // Set the default sort value to "date"
+  // Set default sort and filter options
   sortByElem.value = "date";
   filterPeriodElem.value = "all"; // Show all transactions by default
 
-  // Update the display when the user changes the sort or filter
+  // Event listeners for sorting and filtering
   sortByElem.addEventListener("change", displayTransactions);
   filterPeriodElem.addEventListener("change", displayTransactions);
 
-  // Initialize the display
-  displayTransactions();
+  // Initialize the display by fetching transactions
+  fetchTransactions();
 });

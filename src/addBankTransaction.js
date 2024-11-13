@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+change this so it can call the api,  document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("transactionForm");
     const amountInput = document.getElementById("amount");
     const errorContainer = document.createElement("div");
