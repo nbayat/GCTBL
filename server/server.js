@@ -173,8 +173,6 @@ app.get("/js/profile", (req, res) => {
 app.post("/api/register", async (req, res) => {
   const { nom, email, password } = req.body; // Accepting "nom", "email", and "password"
 
-  console.log(nom, email, password);
-
   let client;
 
   try {
@@ -185,9 +183,12 @@ app.post("/api/register", async (req, res) => {
     const result = await client.query("SELECT * FROM users WHERE email = $1", [
       email,
     ]);
-    if (result.rows.length > 0) {
-      return res.status(400).json({ error: "Email already exists" });
+    if (result.rows.length > 0 || password.length < 8) {
+      if (password.length < 8) res.cookie("errorMessage", "Le mot de passe doit faire 8 caractères.", { httpOnly: false, maxAge: 10000 });
+      if (result.rows.length > 0) res.cookie("errorMessage", "L'email existe déjà.", { httpOnly: false, maxAge: 10000 });
+      return res.redirect("/register");
     }
+
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -219,9 +220,9 @@ app.post("/api/register", async (req, res) => {
     const token = jwt.sign({ email: email }, JWT_SECRET, { expiresIn: "24h" });
 
     // Set cookie
-    res.cookie("token", token, { httpOnly: true });
-
-    res.status(201).json({ message: "User registered successfully" });
+    // res.cookie("token", token, { httpOnly: true });
+    res.cookie("successMessage", "Compte créé avec succès !", { httpOnly: false, maxAge: 10000 }); // 10 secondes
+    res.redirect("/login");
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -249,14 +250,15 @@ app.post("/api/login", async (req, res) => {
     const user = result.rows[0];
 
     if (!user) {
-      console.log("User not found");
-      return res.status(401).json({ error: "Invalid credentials" });
+      res.cookie("errorMessage", "L'adresse e-mail et le mot de passe saisis ne correspondent pas.", { httpOnly: false, maxAge: 10000 });
+      return res.redirect("/login");
     }
 
     // Check if the password matches
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      res.cookie("errorMessage", "L'adresse e-mail et le mot de passe saisis ne correspondent pas.", { httpOnly: false, maxAge: 10000 });
+      return res.redirect("/login");
     }
 
     // Log the IP address, date, and time of login
@@ -388,8 +390,8 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Query to find all transactions related to the user's accounts
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
-        "FROM transactions t " +
-        "WHERE t.accountId = ANY($1)",
+      "FROM transactions t " +
+      "WHERE t.accountId = ANY($1)",
       [accountIds],
     );
     client.release();
@@ -444,7 +446,6 @@ app.post("/api/account/add", getUserFromToken, async (req, res) => {
 
 // API to remove an account
 app.post("/api/accounts/delete", async (req, res) => {
-  console.log("Delete account");
   const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
@@ -469,7 +470,6 @@ app.post("/api/accounts/delete", async (req, res) => {
 
       // Check if accountId is provided in the body
       const { accountId } = req.body;
-      console.log("Account ID: ", accountId);
 
       if (!accountId) {
         return res.status(400).json({ error: "Account ID is required" });
@@ -533,8 +533,6 @@ app.get("/api/accounts/getAll", async (req, res) => {
         [user.id],
       );
       const accounts = accountsResult.rows;
-
-      console.log(accounts);
 
       // Respond with the accounts data
       res.status(200).json({ accounts });
@@ -605,8 +603,8 @@ app.post("/api/transactions/add", async (req, res) => {
     // Insert the transaction into the database
     const transactionResult = await client.query(
       "INSERT INTO transactions (type, amount, balance, accountId) " +
-        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
-        "RETURNING id, type, amount, balance, accountId",
+      "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
+      "RETURNING id, type, amount, balance, accountId",
       [type, amount, accountId],
     );
 

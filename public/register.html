@@ -32,6 +32,16 @@
         </div>
     </header>
 
+    <div id="notification"
+        class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-auto w-1/2 flex justify-between items-center"
+        role="alert">
+        <span class="block sm:inline" id="notification-message"></span>
+        <button type="button" class="text-green-700 hover:text-green-900" onclick="closeNotification()">
+            &times; <!-- Symbole de fermeture -->
+        </button>
+    </div>
+
+
     <!-- Formulaire d'Inscription -->
     <div class="flex flex-col items-center min-h-screen space-y-8">
         <a href="/homepage" class="mb-4">
@@ -46,7 +56,7 @@
                     <label for="nom" class="block text-sm font-medium text-gray-700">Nom complet</label>
                     <input type="text" id="nom" name="nom" required
                         class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-                        placeholder="Dupont Jean"/>
+                        placeholder="Dupont Jean" />
                 </div>
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
@@ -73,6 +83,33 @@
             </p>
         </div>
     </div>
+    <script>
+        // Fonction pour lire le cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Affiche le message de succès, puis cache la notification après 10 secondes
+        const message = decodeURIComponent(getCookie("errorMessage") || "");
+        if (message) {
+            const notification = document.getElementById("notification");
+            document.getElementById("notification-message").textContent = message;
+            notification.classList.remove("hidden");
+
+            // Supprime le cookie pour éviter une réapparition
+            document.cookie = "errorMessage=; Max-Age=0; path=/";
+
+            // Cache la notification après 10 secondes
+            setTimeout(closeNotification, 4000);
+        }
+
+        // Fonction pour fermer la notification manuellement
+        function closeNotification() {
+            document.getElementById("notification").classList.add("hidden");
+        }
+    </script>
 </body>
 
 </html>

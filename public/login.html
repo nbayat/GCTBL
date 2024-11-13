@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/style.css">
 </head>
+
 <body class="bg-gray-100 text-gray-900">
 
     <!-- En-tête -->
@@ -30,6 +32,13 @@
         </div>
     </header>
 
+    <div id="notification" class="hidden px-4 py-3 rounded mb-4 mx-auto w-1/2 flex justify-between items-center" role="alert">
+        <span class="block sm:inline" id="notification-message"></span>
+        <button type="button" class="text-green-700 hover:text-green-900" onclick="closeNotification()">
+            &times; <!-- Symbole de fermeture -->
+        </button>
+    </div>
+
     <!-- Formulaire de Connexion -->
     <div class="flex flex-col items-center min-h-screen space-y-8">
         <a href="/homepage" class="mb-4">
@@ -42,24 +51,67 @@
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" id="email" name="email" required placeholder="votre.email@exemple.com"
-                           class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" />
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" />
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
                     <input type="password" id="password" name="password" required placeholder="********"
-                           class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" />
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" />
                 </div>
                 <div>
                     <button type="submit"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#008250] hover:bg-[#006B3C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#008250] hover:bg-[#006B3C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
                         Se connecter
                     </button>
                 </div>
             </form>
-            <p class="text-center text-sm text-gray-500 mt-4">Pas de compte ? 
-                <a href="/register" class="text-[#008250] hover:text-[#006B3C] hover:underline dark:text-[#006B3C]">Inscrivez-vous</a>
+            <p class="text-center text-sm text-gray-500 mt-4">Pas de compte ?
+                <a href="/register"
+                    class="text-[#008250] hover:text-[#006B3C] hover:underline dark:text-[#006B3C]">Inscrivez-vous</a>
             </p>
         </div>
     </div>
+
+
+    <script>
+        // Fonction pour lire le cookie
+        function getCookie(name) {
+            if(name == "successMessage"){
+                document.getElementById("notification").classList.add("bg-green-100");
+                document.getElementById("notification").classList.add("border");
+                document.getElementById("notification").classList.add("border-green-400");
+                document.getElementById("notification").classList.add("text-green-700");
+            }
+            if(name == "errorMessage"){
+                document.getElementById("notification").classList.add("bg-red-100");
+                document.getElementById("notification").classList.add("border");
+                document.getElementById("notification").classList.add("border-red-400");
+                document.getElementById("notification").classList.add("text-red-700");
+            }
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Affiche le message de succès, puis cache la notification après 10 secondes
+        const message = decodeURIComponent(getCookie("successMessage") || getCookie("errorMessage") || "");
+        if (message) {
+            const notification = document.getElementById("notification");
+            document.getElementById("notification-message").textContent = message;
+            notification.classList.remove("hidden");
+
+            // Supprime le cookie pour éviter une réapparition
+            document.cookie = "successMessage=; Max-Age=0; path=/";
+
+            // Cache la notification après 10 secondes
+            setTimeout(closeNotification, 4000);
+        }
+
+        // Fonction pour fermer la notification manuellement
+        function closeNotification() {
+            document.getElementById("notification").classList.add("hidden");
+        }
+    </script>
 </body>
+
 </html>

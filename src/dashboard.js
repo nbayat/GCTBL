@@ -96,14 +96,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Open delete confirmation modal
   window.openDeleteModal = function (accountId) {
-    console.log("Ouverture de la modale pour le compte avec ID:", accountId);
     deleteModal.classList.remove("hidden"); // Show the modal
     confirmDeleteBtn.onclick = function () {
       deleteAccount(accountId);
       deleteModal.classList.add("hidden"); // Hide the modal after confirmation
     };
     cancelDeleteBtn.onclick = function () {
-      console.log("Suppression annulée");
       deleteModal.classList.add("hidden"); // Hide the modal after canceling
     };
   };
