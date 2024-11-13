@@ -19,6 +19,7 @@ const pool = new Pool({
 });
 
 // Middleware to parse JSON bodies
+// app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser()); // This should be set before your routes
@@ -52,11 +53,6 @@ app.get("/register", (req, res) => {
 
 app.get("/dashboard", (req, res) => {
   const filePath = path.join(__dirname, "..", "public", "dashboard.html");
-  res.sendFile(filePath);
-});
-
-app.get("/account/add", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "addBankAccount.html");
   res.sendFile(filePath);
 });
 
@@ -137,11 +133,6 @@ app.get("/api/user/connections", async (req, res) => {
   }
 });
 
-app.get("/homepage", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "homepage.html");
-  res.sendFile(filePath);
-});
-
 app.get("/transactions", (req, res) => {
   const filePath = path.join(
     __dirname,
@@ -153,15 +144,9 @@ app.get("/transactions", (req, res) => {
 });
 
 app.get("/js/transactions", (req, res) => {
-  const filePath = path.join(
-    __dirname,
-    "..",
-    "src",
-    "addBankTransaction.js",
-  );
+  const filePath = path.join(__dirname, "..", "src", "addBankTransaction.js");
   res.sendFile(filePath);
 });
-
 
 app.get("/profile", (req, res) => {
   const filePath = path.join(__dirname, "..", "public", "userProfile.html");
@@ -424,57 +409,28 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
 });
 
 // API to add a new account
-app.post("/api/accounts/add", async (req, res) => {
-  // 1. Get the token from cookies
-  const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
+app.post("/api/account/add", getUserFromToken, async (req, res) => {
+  const { name, type, lowSale, balance } = req.body;
+  const userId = req.userId;
+
+  if (!name || !type || lowSale === undefined || balance === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
   try {
-    // 2. Verify and decode the JWT token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const userEmail = decoded.email; // Assuming email is encoded in the token
-
-    // 3. Get user ID from the database using the decoded email
     const client = await pool.connect();
-    const userResult = await client.query(
-      "SELECT id FROM users WHERE email = $1",
-      [userEmail],
-    );
-    const user = userResult.rows[0];
-    if (!user) {
-      client.release();
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const userId = user.id;
-
-    // 4. Extract account data from request body
-    const { name, type, lowSale, balance } = req.body;
-
-    if (!name || !type || lowSale === undefined || balance === undefined) {
-      client.release();
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    // 5. Insert the new account into the 'accounts' table
     const result = await client.query(
       "INSERT INTO accounts (name, type, lowSale, balance, userId) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       [name, type, lowSale, balance, userId],
     );
+    client.release();
 
     const newAccount = result.rows[0];
-
-    // 6. Respond with the created account details
-    client.release();
-    return res.status(201).json({
-      message: "Account successfully created",
-      account: newAccount,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
+    return res
+      .status(201)
+      .json({ message: "Account created successfully", account: newAccount });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to create account" });
   }
 });
 
@@ -619,21 +575,54 @@ app.post("/api/transaction/add", getUserFromToken, async (req, res) => {
 });
 
 // API to get all transactions for the user
-app.post("/api/transaction/list", getUserFromToken, async (req, res) => {
-  const userId = req.userId;
-
+app.get("/api/transactions/getAll", async (req, res) => {
   try {
-    const client = await pool.connect();
-    const result = await client.query(
-      "SELECT * FROM transactions t JOIN accounts a ON t.accountId = a.id WHERE a.userId = $1",
-      [userId],
-    );
-    client.release();
+    // Check for the token in cookies
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
 
-    const transactions = result.rows;
-    return res.status(200).json({ transactions });
+    // Verify and decode the JWT token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email; // Extract the email from the token
+
+    // Establish a connection to the database
+    const client = await pool.connect();
+
+    // Get the user ID using the email from the decoded token
+    const userResult = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [userEmail],
+    );
+    const user = userResult.rows[0];
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = user.id;
+
+    // Now fetch all transactions for the user by joining the transactions and accounts tables
+    const transactionQuery = `
+      SELECT t.id, t.type, t.amount, t.balance, t.accountid, a.name as account_name
+      FROM transactions t
+      JOIN accounts a ON a.id = t.accountid
+      WHERE a.userid = $1
+    `;
+    const transactionResult = await client.query(transactionQuery, [userId]);
+
+    // If no transactions found
+    if (transactionResult.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No transactions found for this user." });
+    }
+
+    // Return the transactions
+    return res.json({ transactions: transactionResult.rows });
   } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch transactions" });
+    console.error("Error fetching transactions:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
