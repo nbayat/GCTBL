@@ -4,12 +4,9 @@ body {
 }
 
 #header {
-    display: flex;
-    align-items: center;
+    padding: 5px 25px 5px 25px;
     color: white;
     background-color: #008250;
-    padding: 0px;
-    margin: 0px;
     font-weight: 600;
 }
 
