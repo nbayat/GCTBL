@@ -1,48 +1,72 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const tbody = document.getElementById("tbody");
-    const totalBalanceElem = document.getElementById("totalBalance");
-    const deleteModal = document.getElementById("deleteModal");
-    const cancelDeleteBtn = document.getElementById("cancelDelete");
-    const confirmDeleteBtn = document.getElementById("confirmDelete");
-    let accountsData = [
-        { id: 1, name: "Compte Principal", type: "Courant", lowSale: 500, balance: 1500, userId: 123 },
-        { id: 2, name: "Compte Épargne", type: "Épargne", lowSale: 1000, balance: 2500, userId: 123 }
-    ];
+  const tbody = document.getElementById("tbody");
+  const totalBalanceElem = document.getElementById("totalBalance");
+  const deleteModal = document.getElementById("deleteModal");
+  const cancelDeleteBtn = document.getElementById("cancelDelete");
+  const confirmDeleteBtn = document.getElementById("confirmDelete");
+  let accountsData = [];
 
-    // Fonction pour calculer le solde total
-    function updateTotalBalance() {
-        const totalBalance = accountsData.reduce((acc, account) => acc + account.balance, 0);
-        totalBalanceElem.textContent = `€${totalBalance.toFixed(2)}`;
+  // Fetch account data from the API
+  async function fetchAccountsData() {
+    try {
+      const response = await fetch("/api/accounts/getAll");
+      if (!response.ok) {
+        throw new Error("Failed to fetch accounts data");
+      }
+      const data = await response.json();
+
+      // Check if the response contains the accounts array
+      accountsData = data.accounts || []; // Use data.accounts if it exists, otherwise an empty array
+
+      console.log("Accounts data:", accountsData);
+
+      displayAccounts();
+      updateTotalBalance();
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+      tbody.innerHTML =
+        '<tr><td colspan="5" class="text-center">Erreur lors de la récupération des données</td></tr>';
     }
+  }
 
-    // Afficher les comptes bancaires dans le tableau
-    function displayAccounts() {
-        tbody.innerHTML = ""; // Effacer le contenu actuel
-        if (accountsData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Pas de donnée actuellement</td></tr>';
-        } else {
-            accountsData.forEach(account => {
-                const row = document.createElement("tr");
+  // Function to calculate and update the total balance
+  function updateTotalBalance() {
+    const totalBalance = accountsData.reduce(
+      (acc, account) => acc + account.balance,
+      0,
+    );
+    totalBalanceElem.textContent = `€${totalBalance.toFixed(2)}`;
+  }
 
-                // Nom du compte
-                const nameCell = document.createElement("td");
-                nameCell.className = "px-6 py-3";
-                nameCell.textContent = account.name;
+  // Display accounts in the table
+  function displayAccounts() {
+    tbody.innerHTML = ""; // Clear current content
+    if (accountsData.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="5" class="text-center">Pas de donnée actuellement</td></tr>';
+    } else {
+      accountsData.forEach((account) => {
+        const row = document.createElement("tr");
 
-                // Bas solde
-                const lowSaleCell = document.createElement("td");
-                lowSaleCell.className = "px-6 py-3";
-                lowSaleCell.textContent = `€${account.lowSale}`;
+        // Account name
+        const nameCell = document.createElement("td");
+        nameCell.className = "px-6 py-3";
+        nameCell.textContent = account.name;
 
-                // Solde actuel
-                const balanceCell = document.createElement("td");
-                balanceCell.className = "px-6 py-3";
-                balanceCell.textContent = `€${account.balance.toFixed(2)}`;
+        // Low sale
+        const lowSaleCell = document.createElement("td");
+        lowSaleCell.className = "px-6 py-3";
+        lowSaleCell.textContent = `€${account.lowsale}`;
 
-                // Type de compte
-                const typeCell = document.createElement("td");  // Nouvelle cellule
-                typeCell.className = "px-6 py-3";
-                typeCell.textContent = account.type;  // Afficher le type de compte (courant, épargne, etc.)
+        // Current balance
+        const balanceCell = document.createElement("td");
+        balanceCell.className = "px-6 py-3";
+        balanceCell.textContent = `€${account.balance.toFixed(2)}`;
+
+        // Account type
+        const typeCell = document.createElement("td");
+        typeCell.className = "px-6 py-3";
+        typeCell.textContent = account.type;
 
                 // Actions
                 const actionsCell = document.createElement("td");
@@ -53,46 +77,64 @@ document.addEventListener("DOMContentLoaded", function () {
                         title="Voir les transactions">
                         <i class="fas fa-history"></i>
                     </a>
-                    <button class="text-red-600 hover:text-red-800 ml-4" 
-                        title="Supprimer le compte" 
+                    <button class="text-red-600 hover:text-red-800 ml-4"
+                        title="Supprimer le compte"
                         onclick="openDeleteModal(${account.id})">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 `;
 
-                row.appendChild(nameCell);
-                row.appendChild(lowSaleCell);
-                row.appendChild(balanceCell);
-                row.appendChild(typeCell);  // Ajouter la cellule du type de compte
-                row.appendChild(actionsCell);
+        row.appendChild(nameCell);
+        row.appendChild(lowSaleCell);
+        row.appendChild(balanceCell);
+        row.appendChild(typeCell);
+        row.appendChild(actionsCell);
 
-                tbody.appendChild(row);
-            });
-        }
+        tbody.appendChild(row);
+      });
     }
+  }
 
-    // Ouvrir la modale de confirmation de suppression
-    window.openDeleteModal = function(accountId) {
-        console.log("Ouverture de la modale pour le compte avec ID:", accountId);
-        deleteModal.classList.remove("hidden"); // Retirer la classe hidden pour afficher la modale
-        confirmDeleteBtn.onclick = function () {
-            deleteAccount(accountId);
-            deleteModal.classList.add("hidden"); // Cacher la modale après confirmation
-        };
-        cancelDeleteBtn.onclick = function () {
-            console.log("Suppression annulée");
-            deleteModal.classList.add("hidden"); // Cacher la modale après annulation
-        };
+  // Open delete confirmation modal
+  window.openDeleteModal = function (accountId) {
+    console.log("Ouverture de la modale pour le compte avec ID:", accountId);
+    deleteModal.classList.remove("hidden"); // Show the modal
+    confirmDeleteBtn.onclick = function () {
+      deleteAccount(accountId);
+      deleteModal.classList.add("hidden"); // Hide the modal after confirmation
+    };
+    cancelDeleteBtn.onclick = function () {
+      console.log("Suppression annulée");
+      deleteModal.classList.add("hidden"); // Hide the modal after canceling
+    };
+  };
+
+  // Delete an account and update the total balance
+  async function deleteAccount(accountId) {
+    try {
+      // Send POST request to the API to delete the account
+      const response = await fetch("/api/accounts/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accountId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account");
+      }
+
+      // If successful, remove the account from the accountsData array
+      accountsData = accountsData.filter((account) => account.id !== accountId);
+      displayAccounts();
+      updateTotalBalance();
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      // You can also show an error message to the user if you like
     }
+  }
 
-    // Supprimer un compte et mettre à jour le solde total
-    function deleteAccount(accountId) {
-        accountsData = accountsData.filter(account => account.id !== accountId);
-        displayAccounts();
-        updateTotalBalance();
-    }
-
-    // Initialiser l'affichage
-    displayAccounts();
-    updateTotalBalance();
+  // Initialize the display
+  fetchAccountsData();
 });
