@@ -23,6 +23,7 @@ const pool = new Pool({
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser()); // This should be set before your routes
+app.use(express.json()); // Middleware to parse JSON bodies
 
 // Middleware for JWT validation
 const verifyToken = (req, res, next) => {
@@ -71,7 +72,12 @@ app.get("/history", (req, res) => {
 });
 
 app.get("/js/history", (req, res) => {
-  const filePath = path.join(__dirname, "..", "server", "bankTransactionsHistory.js");
+  const filePath = path.join(
+    __dirname,
+    "..",
+    "server",
+    "bankTransactionsHistory.js",
+  );
   res.sendFile(filePath);
 });
 
@@ -418,35 +424,115 @@ app.post("/api/account/add", getUserFromToken, async (req, res) => {
 });
 
 // API to remove an account
-app.post("/api/account/remove", getUserFromToken, async (req, res) => {
-  const { accountId } = req.body;
-  const userId = req.userId;
-
-  if (!accountId) {
-    return res.status(400).json({ error: "Missing account ID" });
+app.post("/api/accounts/delete", async (req, res) => {
+  console.log("Delete account");
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
   }
 
   try {
-    const client = await pool.connect();
-    const result = await client.query(
-      "DELETE FROM accounts WHERE id = $1 AND userId = $2 RETURNING *",
-      [accountId, userId],
-    );
-    client.release();
+    // Verify and decode the JWT token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
 
-    const deletedAccount = result.rows[0];
-    if (!deletedAccount) {
-      return res
-        .status(404)
-        .json({ error: "Account not found or does not belong to user" });
+    const client = await pool.connect();
+    try {
+      // Get the user ID from the email in the decoded token
+      const userResult = await client.query(
+        "SELECT id FROM users WHERE email = $1",
+        [userEmail],
+      );
+      const user = userResult.rows[0];
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Check if accountId is provided in the body
+      const { accountId } = req.body;
+      console.log("Account ID: ", accountId);
+
+      if (!accountId) {
+        return res.status(400).json({ error: "Account ID is required" });
+      }
+
+      // Check if the account exists and belongs to the user
+      const accountResult = await client.query(
+        "SELECT id FROM accounts WHERE id = $1 AND userId = $2",
+        [accountId, user.id],
+      );
+
+      if (accountResult.rowCount === 0) {
+        return res
+          .status(404)
+          .json({ error: "Account not found or does not belong to the user" });
+      }
+
+      // Delete the account
+      await client.query("DELETE FROM accounts WHERE id = $1", [accountId]);
+
+      res.status(200).json({ message: "Account deleted successfully" });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the account" });
+  }
+});
+
+app.get("/api/accounts/getAll", async (req, res) => {
+  try {
+    // Check for the token in cookies
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
     }
 
-    return res.status(200).json({
-      message: "Account removed successfully",
-      account: deletedAccount,
-    });
+    // Verify and decode the JWT token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    // Connect to the database
+    const client = await pool.connect();
+    try {
+      // Get the user ID using the email from the decoded token
+      const userResult = await client.query(
+        "SELECT id FROM users WHERE email = $1",
+        [userEmail],
+      );
+      const user = userResult.rows[0];
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Retrieve the list of accounts for the user
+      const accountsResult = await client.query(
+        "SELECT id, name, type, lowSale, balance FROM accounts WHERE userId = $1",
+        [user.id],
+      );
+      const accounts = accountsResult.rows;
+
+      console.log(accounts);
+
+      // Respond with the accounts data
+      res.status(200).json({ accounts });
+    } finally {
+      client.release();
+    }
   } catch (error) {
-    return res.status(500).json({ error: "Failed to remove account" });
+    console.error("Error in /api/accounts:", error);
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    res
+      .status(500)
+      .json({ error: "An error occurred while retrieving accounts" });
   }
 });
 
