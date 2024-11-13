@@ -66,7 +66,7 @@ app.get("/js/dashboard", (req, res) => {
 });
 
 app.get("/js/account/add", (req, res) => {
-  const filePath = path.join(__dirname, "..", "server", "addBankAccount.js");
+  const filePath = path.join(__dirname, "..", "src", "addBankAccount.js");
   res.sendFile(filePath);
 });
 
@@ -173,15 +173,6 @@ app.get("/js/profile", (req, res) => {
   res.sendFile(filePath);
 });
 
-app.get("/add", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "addBankAccount.html");
-  res.sendFile(filePath);
-});
-
-app.get("/js/add", (req, res) => {
-  const filePath = path.join(__dirname, "..", "src", "addBankAccount.js");
-  res.sendFile(filePath);
-});
 
 // Route to register a new user with the "nom" field first
 app.post("/api/register", async (req, res) => {
