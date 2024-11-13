@@ -60,6 +60,10 @@ xhr.onreadystatechange = function () {
 // Send the request
 xhr.send();
 
+var firstnameLoaded = "";
+var lastnameLoaded = "";
+var emailLoaded = "";
+
 function loadUserData() {
     fetch('/api/user', {
         method: 'GET',
@@ -70,10 +74,14 @@ function loadUserData() {
         .then(response => response.json())
         .then(data => {
             if (data.user && data.user.nom && data.user.email) {
+                console.log(data.user.email)
                 // Remplir le formulaire avec les données de l'utilisateur
-                document.getElementById('firstname').value = data.user.nom.split(' ')[0];
-                document.getElementById('lastname').value = data.user.nom.split(' ')[1];
-                document.getElementById('email').value = data.user.email;
+                firstnameLoaded = data.user.nom.split(' ')[0];
+                lastnameLoaded = data.user.nom.split(' ')[1];
+                emailLoaded = data.user.email;
+                document.getElementById('firstname').value = firstnameLoaded;
+                document.getElementById('lastname').value = lastnameLoaded;
+                document.getElementById('email').value = emailLoaded;
             } else {
                 console.error('Utilisateur non trouvé ou données manquantes');
             }
@@ -110,10 +118,12 @@ function editData(event) {
         .then(data => {
             if (data.success) {
                 // Optionnellement, recharger les données utilisateur
-                document.getElementById("notification-message").textContent = "Vos informations personnelles ont bien été modifiées.";
-                notification.classList.remove("hidden");
-                setTimeout(closeNotification, 4000);
-                loadUserData();
+                if (firstnameLoaded != firstname || lastnameLoaded != lastname || emailLoaded != email) {
+                    document.getElementById("notification-message").textContent = "Vos informations personnelles ont bien été modifiées.";
+                    notification.classList.remove("hidden");
+                    setTimeout(closeNotification, 4000);
+                    loadUserData();
+                }
             } else {
                 alert('Erreur lors de la mise à jour des informations');
             }

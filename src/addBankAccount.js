@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       // Send the data using Fetch API (AJAX)
-      fetch("/api/accounts/add", {
+      fetch("/api/account/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,8 +63,10 @@ document.addEventListener("DOMContentLoaded", function () {
       })
         .then((response) => response.json())
         .then((data) => {
-          if (data.message === "Account successfully created") {
+          console.log(data.message);
+          if (data.message === "Account created successfully") {
             // Redirect to dashboard after successful account creation
+            localStorage.setItem("successMessage", "Votre compte a été créé avec succès.");
             window.location.href = "/dashboard";
           } else {
             // Display error if account creation failed

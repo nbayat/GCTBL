@@ -6,6 +6,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const confirmDeleteBtn = document.getElementById("confirmDelete");
   let accountsData = [];
 
+  if (localStorage.getItem("successMessage")) {
+    document.getElementById("notification-message").textContent = localStorage.getItem("successMessage");;
+    notification.classList.remove("hidden");
+    setTimeout(closeNotification, 4000);
+  }
+
+
   // Fetch account data from the API
   async function fetchAccountsData() {
     try {
@@ -67,10 +74,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Account type
 
-                // Actions
-                const actionsCell = document.createElement("td");
-                actionsCell.className = "px-6 py-3";
-                actionsCell.innerHTML = `
+        // Actions
+        const actionsCell = document.createElement("td");
+        actionsCell.className = "px-6 py-3";
+        actionsCell.innerHTML = `
                     <a href="/history?id=${account.id}" 
                         class="text-[#008250] hover:text-[#006B3C]" 
                         title="Voir les transactions">
@@ -106,10 +113,10 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   };
 
-  function formattedType(type){
+  function formattedType(type) {
     let formattedType = ""
-    if(type == "epargne") formattedType="Épargne";
-    if(type == "courant") formattedType="Courant";
+    if (type == "epargne") formattedType = "Épargne";
+    if (type == "courant") formattedType = "Courant";
     return formattedType;
   }
 
@@ -142,3 +149,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize the display
   fetchAccountsData();
 });
+
+function closeNotification() {
+  document.getElementById("notification").classList.add("hidden");
+  localStorage.clear();
+}
