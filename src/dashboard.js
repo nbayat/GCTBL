@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const actionsCell = document.createElement("td");
                 actionsCell.className = "px-6 py-3";
                 actionsCell.innerHTML = `
-                    <a href="bankTransactionsHistory.html?id=${account.id}" 
+                    <a href="/transactions?id=${account.id}" 
                         class="text-[#008250] hover:text-[#006B3C]" 
                         title="Voir les transactions">
                         <i class="fas fa-history"></i>

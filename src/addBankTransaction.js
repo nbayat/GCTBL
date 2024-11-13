@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
             errorContainer.innerHTML = errors.join("<br>");
         } else {
             errorContainer.innerHTML = ""; // Effacer les erreurs précédentes
-            window.location.href = "dashboard.html"; // Redirection vers le tableau de bord
+            window.location.href = "/dashboard"; // Redirection vers le tableau de bord
         }
     });
 });

@@ -137,6 +137,11 @@ app.get("/api/user/connections", async (req, res) => {
   }
 });
 
+app.get("/homepage", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "homepage.html");
+  res.sendFile(filePath);
+});
+
 app.get("/transactions", (req, res) => {
   const filePath = path.join(
     __dirname,

@@ -42,7 +42,7 @@
     <div class="flex flex-col items-center min-h-screen space-y-8">
 
         <!-- Bouton de retour à la page d'accueil -->
-        <a href="dashboard.html" class="mb-4">
+        <a href="/dashboard" class="mb-4">
             <img src="/images/logo.png" alt="Accueil"
                 class="w-28 h-28 rounded-full hover:opacity-80 transition-opacity duration-200" />
         </a>
@@ -58,12 +58,12 @@
                 Exporter
             </button>
             <!-- Bouton Ajouter une transaction -->
-            <form action="addBankTransaction.html">
+            <a href="/transactions">
                 <button type="submit"
                     class="text-white bg-[#008250] hover:bg-[#006B3C] focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-700 dark:hover:bg-green-800 dark:focus:ring-green-900">
                     Ajouter une transaction
                 </button>
-            </form>
+            </a>
         </div>
 
         <!-- Tableau d'historique des transactions -->
