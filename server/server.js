@@ -69,6 +69,11 @@ app.get("/history", (req, res) => {
   res.sendFile(filePath);
 });
 
+app.get("/js/history", (req, res) => {
+  const filePath = path.join(__dirname, "..", "server", "bankTransactionsHistory.js");
+  res.sendFile(filePath);
+});
+
 app.get("/api/user/connections", async (req, res) => {
   let client;
 
