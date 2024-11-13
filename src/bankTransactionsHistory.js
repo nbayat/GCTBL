@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tbody = document.getElementById("tbody");
   const sortByElem = document.getElementById("sortBy");
   const filterPeriodElem = document.getElementById("filterPeriod");
-
+  
   // Initial data container for transactions
   let transactionsData = [];
 

@@ -380,6 +380,7 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     if (accountsResult.rows.length === 0) {
       const emptyCSV = Papa.unparse([]); // Create an empty CSV
       res.header("Content-Type", "text/csv");
+
       res.attachment("transactions.csv");
       return res.send(emptyCSV); // Send empty CSV file
     }
@@ -412,6 +413,7 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Set headers to indicate the response is CSV
     res.header("Content-Type", "text/csv");
     res.attachment("transactions.csv"); // Optional: Set the filename for download
+    res.redirect("/historique-transactions?success=true");
     res.send(csv); // Send the CSV content as the response
   } catch (error) {
     return res.status(500).json({ error: "Failed to fetch transactions" });
