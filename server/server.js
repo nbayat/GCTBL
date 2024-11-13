@@ -155,6 +155,7 @@ app.get("/transactions", (req, res) => {
 
 app.get("/js/transactions", (req, res) => {
   const filePath = path.join(__dirname, "..", "src", "addBankTransaction.js");
+  console.log(filePath);
   res.sendFile(filePath);
 });
 
@@ -167,7 +168,6 @@ app.get("/js/profile", (req, res) => {
   const filePath = path.join(__dirname, "..", "src", "userProfile.js");
   res.sendFile(filePath);
 });
-
 
 // Route to register a new user with the "nom" field first
 app.post("/api/register", async (req, res) => {
@@ -184,11 +184,18 @@ app.post("/api/register", async (req, res) => {
       email,
     ]);
     if (result.rows.length > 0 || password.length < 8) {
-      if (password.length < 8) res.cookie("errorMessage", "Le mot de passe doit faire 8 caractères.", { httpOnly: false, maxAge: 10000 });
-      if (result.rows.length > 0) res.cookie("errorMessage", "L'email existe déjà.", { httpOnly: false, maxAge: 10000 });
+      if (password.length < 8)
+        res.cookie("errorMessage", "Le mot de passe doit faire 8 caractères.", {
+          httpOnly: false,
+          maxAge: 10000,
+        });
+      if (result.rows.length > 0)
+        res.cookie("errorMessage", "L'email existe déjà.", {
+          httpOnly: false,
+          maxAge: 10000,
+        });
       return res.redirect("/register");
     }
-
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -221,7 +228,10 @@ app.post("/api/register", async (req, res) => {
 
     // Set cookie
     // res.cookie("token", token, { httpOnly: true });
-    res.cookie("successMessage", "Compte créé avec succès !", { httpOnly: false, maxAge: 10000 }); // 10 secondes
+    res.cookie("successMessage", "Compte créé avec succès !", {
+      httpOnly: false,
+      maxAge: 10000,
+    }); // 10 secondes
     res.redirect("/login");
   } catch (error) {
     console.error(error);
@@ -250,14 +260,22 @@ app.post("/api/login", async (req, res) => {
     const user = result.rows[0];
 
     if (!user) {
-      res.cookie("errorMessage", "L'adresse e-mail et le mot de passe saisis ne correspondent pas.", { httpOnly: false, maxAge: 10000 });
+      res.cookie(
+        "errorMessage",
+        "L'adresse e-mail et le mot de passe saisis ne correspondent pas.",
+        { httpOnly: false, maxAge: 10000 },
+      );
       return res.redirect("/login");
     }
 
     // Check if the password matches
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      res.cookie("errorMessage", "L'adresse e-mail et le mot de passe saisis ne correspondent pas.", { httpOnly: false, maxAge: 10000 });
+      res.cookie(
+        "errorMessage",
+        "L'adresse e-mail et le mot de passe saisis ne correspondent pas.",
+        { httpOnly: false, maxAge: 10000 },
+      );
       return res.redirect("/login");
     }
 
@@ -309,7 +327,7 @@ app.get("/api/logout", (req, res) => {
 // Protected route to get user details
 app.get("/api/user", async (req, res) => {
   const token = req.cookies.token; // Get token from cookies
-  let client;
+
   // Check if the token exists
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
@@ -323,17 +341,23 @@ app.get("/api/user", async (req, res) => {
     let client; // Declare the client variable
 
     // Connect to the database
+    // Connect to the database
     client = await pool.connect();
 
     // Fetch user details using the decoded token's email
+    // Fetch user details using the decoded token's email
     const result = await client.query("SELECT * FROM users WHERE email = $1", [
+      userEmail,
       userEmail,
     ]);
     const user = result.rows[0];
 
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+
+    res.status(200).json({ user });
 
     res.status(200).json({ user });
   } catch (error) {
@@ -438,8 +462,8 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Query to find all transactions related to the user's accounts
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
-      "FROM transactions t " +
-      "WHERE t.accountId = ANY($1)",
+        "FROM transactions t " +
+        "WHERE t.accountId = ANY($1)",
       [accountIds],
     );
     client.release();
@@ -606,6 +630,10 @@ app.get("/api/accounts/getAll", async (req, res) => {
 app.post("/api/transactions/add", async (req, res) => {
   const { type, amount, accountId } = req.body; // Get transaction data from the request body
 
+  console.log("type", type);
+  console.log("amount", amount);
+  console.log("accountId", accountId);
+
   // Check if all necessary fields are provided
   if (!type || !amount || !accountId) {
     return res.status(400).json({ error: "Missing transaction data" });
@@ -652,8 +680,8 @@ app.post("/api/transactions/add", async (req, res) => {
     // Insert the transaction into the database
     const transactionResult = await client.query(
       "INSERT INTO transactions (type, amount, balance, accountId) " +
-      "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
-      "RETURNING id, type, amount, balance, accountId",
+        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
+        "RETURNING id, type, amount, balance, accountId",
       [type, amount, accountId],
     );
 
@@ -677,7 +705,8 @@ app.post("/api/transactions/add", async (req, res) => {
 });
 
 // API to get all transactions for the user
-app.get("/api/transactions/getAll", async (req, res) => {
+app.post("/api/transactions/getAll", async (req, res) => {
+  let client; // Declare the client variable here
   try {
     // Check for the token in cookies
     const token = req.cookies.token;
@@ -690,7 +719,7 @@ app.get("/api/transactions/getAll", async (req, res) => {
     const userEmail = decoded.email; // Extract the email from the token
 
     // Establish a connection to the database
-    const client = await pool.connect();
+    client = await pool.connect();
 
     // Get the user ID using the email from the decoded token
     const userResult = await client.query(
@@ -704,27 +733,43 @@ app.get("/api/transactions/getAll", async (req, res) => {
 
     const userId = user.id;
 
-    // Now fetch all transactions for the user by joining the transactions and accounts tables
+    // Extract accountId from the request body
+    const { accountId } = req.body;
+    if (!accountId) {
+      return res.status(400).json({ error: "Account ID is required" });
+    }
+
+    // Fetch transactions for the specific account ID and user ID
     const transactionQuery = `
-      SELECT t.id, t.type, t.amount, t.balance, t.accountid, a.name as account_name
+      SELECT t.id, t.type, t.amount, t.balance, t.accountid, a.name as account_name, t.transaction_date as transaction_date
       FROM transactions t
       JOIN accounts a ON a.id = t.accountid
-      WHERE a.userid = $1
+      WHERE a.userid = $1 AND t.accountid = $2
     `;
-    const transactionResult = await client.query(transactionQuery, [userId]);
+    const transactionResult = await client.query(transactionQuery, [
+      userId,
+      accountId,
+    ]);
 
     // If no transactions found
     if (transactionResult.rows.length === 0) {
       return res
         .status(404)
-        .json({ message: "No transactions found for this user." });
+        .json({ message: "No transactions found for this account." });
     }
+
+    console.log("transactionResult", transactionResult.rows);
 
     // Return the transactions
     return res.json({ transactions: transactionResult.rows });
   } catch (error) {
     console.error("Error fetching transactions:", error);
     return res.status(500).json({ error: "Internal server error" });
+  } finally {
+    // Release the client only if it was successfully connected
+    if (client) {
+      client.release();
+    }
   }
 });
 

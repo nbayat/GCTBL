@@ -11,7 +11,7 @@
     <script src="/js/history"></script>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+<body class="bg-gray-100 text-gray-900">
 
     <!-- En-tête -->
     <header class="mb-6">
@@ -72,7 +72,7 @@
             <!-- Bouton Ajouter une transaction -->
             <a href="/transactions">
                 <button type="submit"
-                    class="text-white bg-[#008250] hover:bg-[#006B3C] focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-700 dark:hover:bg-green-800 dark:focus:ring-green-900">
+                    class="text-white bg-[#008250] hover:bg-[#006B3C] focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5">
                     Ajouter une transaction
                 </button>
             </a>
@@ -97,8 +97,8 @@
             </select>
         </div>
         <div class="overflow-x-auto w-full max-w-4xl">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-200 dark:bg-gray-700 dark:text-gray-400">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-200">
                     <tr>
                         <th scope="col" class="px-6 py-3">Date</th>
                         <th scope="col" class="px-6 py-3">Type</th>
@@ -106,7 +106,7 @@
                         <th scope="col" class="px-6 py-3">Solde</th>
                     </tr>
                 </thead>
-                <tbody id="tbody" class="bg-white dark:bg-gray-800">
+                <tbody id="tbody" class="bg-white">
                     <!-- Les entrées de transactions seront insérées ici -->
                 </tbody>
             </table>
