@@ -1,75 +1,101 @@
 document.addEventListener("DOMContentLoaded", function () {
     const tbody = document.getElementById("tbody");
-    const titleElem = document.querySelector("h2"); // Sélectionner le titre de la page
-    const accountId = new URLSearchParams(window.location.search).get("id"); // Récupérer l'accountId depuis l'URL
+    const sortByElem = document.getElementById("sortBy");
+    const filterPeriodElem = document.getElementById("filterPeriod");
 
-    // Exemple de données (à remplacer par une source réelle, comme une API ou un stockage)
-    const transactionsData = {
-        1: [
-            { date: "2024-10-01", type: "Dépôt", amount: 500, balance: 2000 },
-            { date: "2024-10-05", type: "Retrait", amount: 100, balance: 1900 }
-        ],
-        2: [
-            { date: "2024-09-15", type: "Dépôt", amount: 1000, balance: 3500 },
-            { date: "2024-09-20", type: "Retrait", amount: 200, balance: 3300 }
-        ]
-    };
+    // Exemple de données de transactions
+    let transactionsData = [
+        { date: "2024-11-10", type: "Dépôt", amount: 500, balance: 3000 },
+        { date: "2024-11-05", type: "Retrait", amount: 200, balance: 2800 },
+        { date: "2024-10-25", type: "Dépôt", amount: 1000, balance: 3800 },
+        { date: "2024-11-01", type: "Retrait", amount: 150, balance: 3650 }
+    ];
 
-    // Fonction pour afficher l'historique des transactions
+    // Fonction pour filtrer les transactions par période
+    function filterByPeriod(period) {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);  // Remettre à minuit pour ignorer l'heure
+
+        return transactionsData.filter(transaction => {
+            const transactionDate = new Date(transaction.date);
+            const diffInDays = (now - transactionDate) / (1000 * 3600 * 24);
+
+            // Si la période sélectionnée est 'all', toutes les transactions sont incluses
+            if (period === 'all') return true;
+
+            // Filtrer par la période sélectionnée (7, 30, 90 jours)
+            return diffInDays <= period;
+        });
+    }
+
+    // Fonction pour trier les transactions par type ou date
+    function sortTransactions(sortBy) {
+        return transactionsData.sort((a, b) => {
+            if (sortBy === 'type') {
+                return a.type.localeCompare(b.type); // Tri par type
+            } else if (sortBy === 'date') {
+                return new Date(b.date) - new Date(a.date); // Tri par date
+            }
+        });
+    }
+
+    // Afficher les transactions
     function displayTransactions() {
+        // Filtrer les transactions selon la période sélectionnée
+        const filteredTransactions = filterByPeriod(filterPeriodElem.value);
+
+        // Trier les transactions selon le critère sélectionné
+        const sortedTransactions = sortTransactions(sortByElem.value);
+
+        // Affichage des transactions dans le tableau
         tbody.innerHTML = ""; // Effacer le contenu actuel
-
-        const accountTransactions = transactionsData[accountId] || [];
-
-        if (accountTransactions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center">Aucune transaction trouvée</td></tr>';
+        if (filteredTransactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">Pas de données pour la période sélectionnée</td></tr>';
         } else {
-            accountTransactions.forEach(transaction => {
-                const row = document.createElement("tr");
+            sortedTransactions.forEach(transaction => {
+                // Si la transaction est dans la période filtrée, l'afficher
+                if (filteredTransactions.includes(transaction)) {
+                    const row = document.createElement("tr");
 
-                const dateCell = document.createElement("td");
-                dateCell.className = "px-6 py-3";
-                dateCell.textContent = transaction.date;
+                    const dateCell = document.createElement("td");
+                    dateCell.textContent = transaction.date;
 
-                const typeCell = document.createElement("td");
-                typeCell.className = "px-6 py-3";
-                typeCell.textContent = transaction.type;
+                    const typeCell = document.createElement("td");
+                    typeCell.textContent = transaction.type;
 
-                const amountCell = document.createElement("td");
-                amountCell.className = "px-6 py-3";
-                amountCell.textContent = `€${transaction.amount.toFixed(2)}`;
+                    const amountCell = document.createElement("td");
 
-                const balanceCell = document.createElement("td");
-                balanceCell.className = "px-6 py-3";
-                balanceCell.textContent = `€${transaction.balance.toFixed(2)}`;
+                    // Ajouter signe + ou - et colorer le montant
+                    if (transaction.type === "Dépôt") {
+                        amountCell.textContent = `+€${transaction.amount.toFixed(2)}`;
+                        amountCell.style.color = "green";
+                    } else if (transaction.type === "Retrait") {
+                        amountCell.textContent = `-€${transaction.amount.toFixed(2)}`;
+                        amountCell.style.color = "red";
+                    }
 
-                row.appendChild(dateCell);
-                row.appendChild(typeCell);
-                row.appendChild(amountCell);
-                row.appendChild(balanceCell);
+                    const balanceCell = document.createElement("td");
+                    balanceCell.textContent = `€${transaction.balance.toFixed(2)}`;
 
-                tbody.appendChild(row);
+                    row.appendChild(dateCell);
+                    row.appendChild(typeCell);
+                    row.appendChild(amountCell);
+                    row.appendChild(balanceCell);
+
+                    tbody.appendChild(row);
+                }
             });
         }
     }
 
-    // Fonction pour changer le titre de la page en fonction du compte
-    function updateTitle() {
-        const account = accountsData.find(account => account.id == accountId); // Trouver le compte par ID
-        if (account) {
-            titleElem.textContent = `Historique des transactions de ${account.name}`;
-        } else {
-            titleElem.textContent = "Historique des transactions";
-        }
-    }
+    // Définir la valeur de tri par défaut à "date"
+    sortByElem.value = 'date';
+    filterPeriodElem.value = 'all';  // Afficher toutes les transactions par défaut
 
-    // Récupérer les données du compte pour changer le titre
-    const accountsData = [
-        { id: 1, name: "Compte Principal" },
-        { id: 2, name: "Compte Épargne" }
-    ];
+    // Mettre à jour l'affichage lorsque l'utilisateur change le filtre ou le tri
+    sortByElem.addEventListener("change", displayTransactions);
+    filterPeriodElem.addEventListener("change", displayTransactions);
 
-    // Mettre à jour le titre et afficher les transactions
-    updateTitle();
+    // Initialisation de l'affichage
     displayTransactions();
 });
