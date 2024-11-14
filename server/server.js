@@ -357,7 +357,6 @@ app.get("/api/user", async (req, res) => {
     ]);
     const user = result.rows[0];
 
-
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -398,11 +397,10 @@ app.put("/api/user/update", async (req, res) => {
     // Mettre à jour les données de l'utilisateur
     await client.query(
       `UPDATE users SET nom = $1, email = $2 WHERE email = $3`,
-      [firstname + ' ' + lastname, email, userEmail]
+      [firstname + " " + lastname, email, userEmail],
     );
 
     res.status(200).json({ success: true });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur interne du serveur" });
