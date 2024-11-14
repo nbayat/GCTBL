@@ -24,21 +24,31 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser()); // This should be set before your routes
 app.use(express.json()); // Middleware to parse JSON bodies
 
-// Middleware for JWT validation
-const verifyToken = (req, res, next) => {
-  const token = req.headers["authorization"];
-  if (!token) {
-    return res.status(401).json({ error: "Unauthorized" });
+function checkCookieMiddleware(req, res, next) {
+  // Check if the specific cookie exists
+  if (req.cookies && req.cookies.token) {
+    // Cookie exists, proceed to the next middleware or route
+    return next();
   }
+  // If cookie does not exist, redirect to /login
+  return res.redirect("/login");
+}
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    req.user = decoded;
-    next();
-  });
-};
+// Middleware to check if the user is authenticated
+app.use("/dashboard", checkCookieMiddleware);
+app.use("/profile", checkCookieMiddleware);
+app.use("/account/add", checkCookieMiddleware);
+app.use("/history", checkCookieMiddleware);
+app.use("/api/user/connections", checkCookieMiddleware);
+app.use("/transactions", checkCookieMiddleware);
+app.use("/api/user/update", checkCookieMiddleware);
+app.use("/api/transaction/user/csv", checkCookieMiddleware);
+app.use("/api/account/add", checkCookieMiddleware);
+app.use("/api/accounts/delete", checkCookieMiddleware);
+app.use("/api/accounts/getAll", checkCookieMiddleware);
+app.use("/api/accounts/getById", checkCookieMiddleware);
+app.use("/api/transactions/add", checkCookieMiddleware);
+app.use("/api/transactions/getAll", checkCookieMiddleware);
 
 app.get("/login", (req, res) => {
   const filePath = path.join(__dirname, "..", "public", "login.html");
@@ -829,13 +839,3 @@ app.post("/api/transactions/getAll", async (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
-
-function redirectToHomepage(req, res, next) {
-  if (req.url === "/") {
-    res.redirect("/homepage");
-  } else {
-    next();
-  }
-}
-
-app.use(redirectToHomepage);
