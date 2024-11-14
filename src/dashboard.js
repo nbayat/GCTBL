@@ -40,7 +40,8 @@ document.addEventListener("DOMContentLoaded", function () {
       (acc, account) => acc + account.balance,
       0,
     );
-    totalBalanceElem.textContent = `${totalBalance.toFixed(2)} €`;
+    const formattedTotalBalance = formatCurrency(totalBalance)
+    totalBalanceElem.textContent = formattedTotalBalance;
   }
 
   // Display accounts in the table
@@ -59,19 +60,19 @@ document.addEventListener("DOMContentLoaded", function () {
         nameCell.textContent = account.name;
 
         const typeCell = document.createElement("td");
-        typeCell.className = "px-6 py-3";
+        typeCell.className = "px-6 py-3 font-semibold text-center";
         typeCell.textContent = formattedType(account.type);
 
         // Current balance
         const balanceCell = document.createElement("td");
         balanceCell.className = "px-6 py-3 text-right";
-        balanceCell.textContent = `${account.balance.toFixed(2)} €`;
+        balanceCell.textContent = formatCurrency(account.balance);
 
         // Account type
 
         // Actions
         const actionsCell = document.createElement("td");
-        actionsCell.className = "px-6 py-3";
+        actionsCell.className = "px-6 py-3 text-center";
         actionsCell.innerHTML = `
             <a href="/history?id=${account.id}" class="text-[#008250] hover:text-[#006B3C]" title="Voir les transactions">
                 <i class="fas fa-history"></i>
@@ -150,4 +151,9 @@ document.addEventListener("DOMContentLoaded", function () {
 function closeNotification() {
   document.getElementById("notification").classList.add("hidden");
   localStorage.clear();
+}
+function formatCurrency(amount) {
+  return amount.toFixed(2) // Formater en deux décimales
+               .replace(/\d(?=(\d{3})+\.)/g, '$& ') // Ajouter un espace tous les trois chiffres avant le point
+               .replace('.', ',') + ' €'; // Remplacer le point par une virgule et ajouter le symbole €
 }

@@ -46,12 +46,9 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((response) => response.json())
         .then((data) => {
           if (data) {
-            document.getElementById("accountTitle").innerHTML =
-              "Historique des transactions de " + data.account.name;
-            document.getElementById("balance").innerHTML =
-              "Solde : " + data.account.balance + " €";
-            document.getElementById("lowSale").innerHTML =
-              "Solde bas : " + data.account.lowsale + " €";
+            document.getElementById("accountTitle").innerHTML = "Historique des transactions de " + data.account.name;
+            document.getElementById("balance").innerHTML = "Solde : " + '<span class="font-semibold text-[#008250]">'+formatCurrency(data.account.balance)+'</span>';
+            document.getElementById("lowSale").innerHTML = "Solde bas : " + '<span class="font-semibold text-[#008250]">'+formatCurrency(data.account.lowsale)+'</span>';
             // Remplir le formulaire avec les données de l'utilisateur
           } else {
             console.error("Utilisateur non trouvé ou données manquantes");
@@ -161,37 +158,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (sortedTransactions.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="4" class="text-center">No data available for the selected period</td></tr>';
+        '<tr><td colspan="4" class="text-center">Pas de transactions pour la période demandée.</td></tr>';
     } else {
       sortedTransactions.forEach((transaction) => {
         const row = document.createElement("tr");
 
         // Create cells for date, type, amount, and balance
         const dateCell = document.createElement("td");
+        dateCell.className = "text-center";
         const transactionDate = parseDate(transaction.transaction_date);
         dateCell.textContent = transactionDate.toLocaleDateString(); // Format date as you need
 
         const typeCell = document.createElement("td");
+        typeCell.className = "text-center font-semibold";
         let formattedType = "";
         if (transaction.type == "deposit") formattedType = "Dépôt";
         else if (transaction.type == "withdrawal") formattedType = "Retrait";
         typeCell.textContent = formattedType;
 
         const amountCell = document.createElement("td");
+        amountCell.className = "text-right";
 
         // Check if transaction type is 'deposit' or 'withdrawal'
         if (transaction.type === "deposit") {
-          amountCell.textContent = `+${transaction.amount} €`;
+          amountCell.textContent = "+"+formatCurrency(transaction.amount);
           amountCell.style.color = "green";
         } else if (transaction.type === "withdrawal") {
-          amountCell.textContent = `-${Math.abs(transaction.amount)} €`;
+          amountCell.textContent = "-"+formatCurrency(Math.abs(transaction.amount));
           amountCell.style.color = "red";
         } else {
           amountCell.textContent = `-`;
         }
 
         const balanceCell = document.createElement("td");
-        balanceCell.textContent = `€${transaction.balance.toFixed(2)}`;
+        balanceCell.className = "text-right";
+        balanceCell.textContent = formatCurrency(transaction.balance);
 
         // Append cells to the row
         row.appendChild(dateCell);
@@ -220,3 +221,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize the display by fetching transactions
   fetchTransactions();
 });
+
+function formatCurrency(amount) {
+  return amount.toFixed(2) // Formater en deux décimales
+    .replace(/\d(?=(\d{3})+\.)/g, '$& ') // Ajouter un espace tous les trois chiffres avant le point
+    .replace('.', ',') + ' €'; // Remplacer le point par une virgule et ajouter le symbole €
+}
