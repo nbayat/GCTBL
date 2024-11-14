@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             const data = await response.json();
             if (data.message === "Compte mis à jour avec succès") {
-                alert("Compte mis à jour avec succès !");
+                localStorage.setItem("successMessage", "Votre compte a été modifiée avec succès.");
                 window.location.href = "/dashboard";
             } else {
                 alert(data.error || "Une erreur est survenue lors de la mise à jour.");
