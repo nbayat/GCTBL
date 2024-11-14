@@ -198,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function closeNotification() {
     document.getElementById("notification").classList.add("hidden");
+    localStorage.clear();
   }
   // Set default sort and filter options
   sortByElem.value = "date";
