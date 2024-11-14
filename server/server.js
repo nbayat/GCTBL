@@ -453,37 +453,40 @@ async function getUserFromToken(req, res, next) {
 }
 
 // New Route: Get all transactions for the user as CSV
-app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
-  const userId = req.userId;
+app.get("/api/transaction/account/csv", getUserFromToken, async (req, res) => {
+  const userId = req.userId; // Get the userId from the token
+  const accountId = req.query.accountId; // Get accountId from the query parameters
+
+  // Check if accountId is provided in the query
+  if (!accountId) {
+    return res.status(400).json({ error: "Account ID is required" });
+  }
 
   try {
     const client = await pool.connect();
 
-    // Query to find all accounts belonging to the user
-    const accountsResult = await client.query(
-      "SELECT id FROM accounts WHERE userId = $1",
-      [userId],
+    // Verify that the account belongs to the user
+    const accountResult = await client.query(
+      "SELECT id FROM accounts WHERE id = $1 AND userId = $2",
+      [accountId, userId],
     );
 
-    // If no accounts are found for the user, return an empty CSV
-    if (accountsResult.rows.length === 0) {
-      const emptyCSV = Papa.unparse([]); // Create an empty CSV
-      res.header("Content-Type", "text/csv");
-
-      res.attachment("transactions.csv");
-      return res.send(emptyCSV); // Send empty CSV file
+    // If no account is found for the user with the specified accountId, return an error
+    if (accountResult.rows.length === 0) {
+      client.release();
+      return res
+        .status(404)
+        .json({ error: "Account not found or does not belong to user" });
     }
 
-    // Extract all account IDs
-    const accountIds = accountsResult.rows.map((account) => account.id);
-
-    // Query to find all transactions related to the user's accounts
+    // Query to find all transactions for the specified account
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
       "FROM transactions t " +
       "WHERE t.accountId = ANY($1)",
       [accountIds],
     );
+
     client.release();
 
     const transactions = transactionsResult.rows;
@@ -502,7 +505,6 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Set headers to indicate the response is CSV
     res.header("Content-Type", "text/csv");
     res.attachment("transactions.csv"); // Optional: Set the filename for download
-    res.redirect("/historique-transactions?success=true");
     res.send(csv); // Send the CSV content as the response
   } catch (error) {
     return res.status(500).json({ error: "Failed to fetch transactions" });
@@ -839,7 +841,7 @@ app.post("/api/transactions/getAll", async (req, res) => {
     );
     const user = userResult.rows[0];
     if (!user) {
-      return res.status(404).json({ error: "User not foundA" });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const userId = user.id;
@@ -864,7 +866,7 @@ app.post("/api/transactions/getAll", async (req, res) => {
 
     // If no transactions found
     if (transactionResult.rows.length === 0) {
-      return res.status(200);
+      return res.status(200).json({ transactions: [] }); // Returning an empty array
     }
 
     // Return the transactions
