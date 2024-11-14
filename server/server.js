@@ -794,7 +794,7 @@ app.post("/api/transactions/getAll", async (req, res) => {
     );
     const user = userResult.rows[0];
     if (!user) {
-      return res.status(404).json({ error: "User not foundA" });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const userId = user.id;
@@ -819,7 +819,7 @@ app.post("/api/transactions/getAll", async (req, res) => {
 
     // If no transactions found
     if (transactionResult.rows.length === 0) {
-      return res.status(200);
+      return res.status(200).json({ transactions: [] }); // Returning an empty array
     }
 
     // Return the transactions
