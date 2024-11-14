@@ -18,8 +18,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }, // Ensure this is set to true in production
 });
 
-// Middleware to parse JSON bodies
-// app.use(express.json());
+// Middleware to parse JSON bodies:
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(cookieParser()); // This should be set before your routes
@@ -338,19 +337,16 @@ app.get("/api/user", async (req, res) => {
 
   let client; // Declare the client variable
 
+  // Connect to the database
+  client = await pool.connect();
+
   try {
     // Verify and decode the JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
     const userEmail = decoded.email;
 
-    // Connect to the database
-    // Connect to the database
-    client = await pool.connect();
-
-    // Fetch user details using the decoded token's email
     // Fetch user details using the decoded token's email
     const result = await client.query("SELECT * FROM users WHERE email = $1", [
-      userEmail,
       userEmail,
     ]);
     const user = result.rows[0];
@@ -360,16 +356,15 @@ app.get("/api/user", async (req, res) => {
     }
 
     res.status(200).json({ user });
-
-    res.status(200).json({ user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
   } finally {
     // Release the client back to the pool if it's defined
-    if (client) {
-      client.release();
-    }
+  }
+
+  if (client) {
+    client.release();
   }
 });
 
