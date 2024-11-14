@@ -747,7 +747,7 @@ app.get("/api/accounts/getById", async (req, res) => {
 
 // API to add a transaction
 app.post("/api/transactions/add", async (req, res) => {
-  const { type, amount, accountId } = req.body; // Get transaction data from the request body
+  const { type, amount, accountId, transaction_date } = req.body; // Get transaction data from the request body
 
   // Check if all necessary fields are provided
   if (!type || !amount || !accountId) {
@@ -794,10 +794,10 @@ app.post("/api/transactions/add", async (req, res) => {
 
     // Insert the transaction into the database
     const transactionResult = await client.query(
-      "INSERT INTO transactions (type, amount, balance, accountId) " +
-        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
-        "RETURNING id, type, amount, balance, accountId",
-      [type, amount, accountId],
+      "INSERT INTO transactions (type, amount, balance, accountId, transaction_date) " +
+        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3, $4) " +
+        "RETURNING id, type, amount, balance, accountId, transaction_date",
+      [type, amount, accountId, transaction_date],
     );
 
     const transaction = transactionResult.rows[0];
