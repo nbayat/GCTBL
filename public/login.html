@@ -33,7 +33,8 @@
         </div>
     </header>
 
-    <div id="notification" class="hidden px-4 py-3 rounded mb-4 mx-auto w-1/2 flex justify-between items-center" role="alert">
+    <div id="notification" class="hidden px-4 py-3 rounded mb-4 mx-auto w-1/2 flex justify-between items-center"
+        role="alert">
         <span class="block sm:inline" id="notification-message"></span>
         <button type="button" class="text-green-700 hover:text-green-900" onclick="closeNotification()">
             &times; <!-- Symbole de fermeture -->
@@ -67,23 +68,24 @@
                 </div>
             </form>
             <p class="text-center text-sm text-gray-500 mt-4">Pas de compte ?
-                <a href="/register"
-                    class="text-[#008250] hover:text-[#006B3C] hover:underline ">Inscrivez-vous</a>
+                <a href="/register" class="text-[#008250] hover:text-[#006B3C] hover:underline ">Inscrivez-vous</a>
             </p>
         </div>
     </div>
-
+    <footer class="mt-12 text-center text-sm text-gray-600">
+        <p>&copy; 2024 Mina. Tous droits réservés.</p>
+    </footer>
 
     <script>
         // Fonction pour lire le cookie
         function getCookie(name) {
-            if(name == "successMessage"){
+            if (name == "successMessage") {
                 document.getElementById("notification").classList.add("bg-green-100");
                 document.getElementById("notification").classList.add("border");
                 document.getElementById("notification").classList.add("border-green-400");
                 document.getElementById("notification").classList.add("text-green-700");
             }
-            if(name == "errorMessage"){
+            if (name == "errorMessage") {
                 document.getElementById("notification").classList.add("bg-red-100");
                 document.getElementById("notification").classList.add("border");
                 document.getElementById("notification").classList.add("border-red-400");
