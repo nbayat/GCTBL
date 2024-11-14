@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           if ((amount > data.account.balance) && typeSelect.value == "withdrawal") {
-            errors.push("Vous ne pouvez pas retirer plus que ce que vous avez en solde."+" Solde actuel: "+data.account.balance+",00 €");
+            errors.push("Vous ne pouvez pas retirer plus que ce que vous avez en solde." + " Solde actuel: " + data.account.balance + ",00 €");
           }
 
           // Display errors or proceed
@@ -74,7 +74,9 @@ document.addEventListener("DOMContentLoaded", function () {
               });
 
               if (response.ok) {
-                if (((data.account.balance - amountByType) < data.account.lowsale) && typeSelect.value == "withdrawal") localStorage.setItem("warningMessage", "Votre solde est inférieur au seuil défini. Veuillez recharger votre compte.");
+                if (((data.account.balance + amountByType) < data.account.lowsale) && typeSelect.value == "withdrawal") {
+                  localStorage.setItem("warningMessage", "Votre solde est inférieur au seuil défini. Veuillez recharger votre compte.");
+                }
                 window.location.href = "/history?id=" + accountId;
               } else {
                 // Display error message if the API call fails

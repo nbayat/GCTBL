@@ -16,8 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let transactionsData = [];
 
   if (localStorage.getItem("warningMessage")) {
-    document.getElementById("notification-message").textContent =
-      localStorage.getItem("warningMessage");
+    document.getElementById("notification-message").textContent = localStorage.getItem("warningMessage");
     notification.classList.remove("hidden");
     setTimeout(closeNotification, 4000);
   }
