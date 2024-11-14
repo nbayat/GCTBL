@@ -124,7 +124,7 @@ function editData(event) {
                     loadUserData();
                 }
             } else {
-                alert('Erreur lors de la mise à jour des informations');
+                alert("L'email est déjà utilisé.");
             }
         })
         .catch(error => {
@@ -137,4 +137,32 @@ function reload() {
 
 function closeNotification() {
     document.getElementById("notification").classList.add("hidden");
+}
+
+function changePassword(event) {
+    event.preventDefault();
+
+    const currentPassword = document.getElementById('password').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+    if (newPassword !== confirmNewPassword) {
+        alert("Les nouveaux mots de passe ne correspondent pas.");
+        return;
+    }
+
+    fetch('/api/user/updatePassword', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Mot de passe modifié avec succès.");
+        } else {
+            alert("Erreur: " + data.error);
+        }
+    })
+    .catch(error => console.error("Erreur:", error));
 }

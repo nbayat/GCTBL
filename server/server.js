@@ -389,6 +389,42 @@ app.get("/api/user", async (req, res) => {
     client.release();
   }
 });
+app.put("/api/user/updatePassword", async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userEmail = decoded.email;
+
+    const client = await pool.connect();
+
+    const result = await client.query("SELECT password FROM users WHERE email = $1", [userEmail]);
+    const user = result.rows[0];
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(403).json({ error: "Mot de passe actuel incorrect." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await client.query("UPDATE users SET password = $1 WHERE email = $2", [hashedPassword, userEmail]);
+
+    client.release();
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du mot de passe:", error);
+    res.status(500).json({ error: "Erreur serveur." });
+  }
+});
 
 app.put("/api/user/update", async (req, res) => {
   const token = req.cookies.token;
@@ -482,8 +518,8 @@ app.get("/api/transaction/account/csv", getUserFromToken, async (req, res) => {
     // Query to find all transactions for the specified account
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
-        "FROM transactions t " +
-        "WHERE t.accountId = $1",
+      "FROM transactions t " +
+      "WHERE t.accountId = $1",
       [accountId],
     );
 
@@ -795,8 +831,8 @@ app.post("/api/transactions/add", async (req, res) => {
     // Insert the transaction into the database
     const transactionResult = await client.query(
       "INSERT INTO transactions (type, amount, balance, accountId, transaction_date) " +
-        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3, $4) " +
-        "RETURNING id, type, amount, balance, accountId, transaction_date",
+      "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3, $4) " +
+      "RETURNING id, type, amount, balance, accountId, transaction_date",
       [type, amount, accountId, transaction_date],
     );
 
