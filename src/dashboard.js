@@ -73,17 +73,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const actionsCell = document.createElement("td");
         actionsCell.className = "px-6 py-3";
         actionsCell.innerHTML = `
-                    <a href="/history?id=${account.id}" 
-                        class="text-[#008250] hover:text-[#006B3C]" 
-                        title="Voir les transactions">
-                        <i class="fas fa-history"></i>
-                    </a>
-                    <button class="text-red-600 hover:text-red-800 ml-4"
-                        title="Supprimer le compte"
-                        onclick="openDeleteModal(${account.id})">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                `;
+            <a href="/history?id=${account.id}" class="text-[#008250] hover:text-[#006B3C]" title="Voir les transactions">
+                <i class="fas fa-history"></i>
+            </a>
+            <button class="text-blue-600 hover:text-blue-800 ml-4" title="Modifier le compte" onclick="openEditPage(${account.id})">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="text-red-600 hover:text-red-800 ml-4" title="Supprimer le compte" onclick="openDeleteModal(${account.id})">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
 
         row.appendChild(nameCell);
         row.appendChild(typeCell);
@@ -105,6 +104,10 @@ document.addEventListener("DOMContentLoaded", function () {
     cancelDeleteBtn.onclick = function () {
       deleteModal.classList.add("hidden"); // Hide the modal after canceling
     };
+  };
+
+  window.openEditPage = function (accountId) {
+    window.location.href = `/account/update?id=${accountId}`;
   };
 
   function formattedType(type) {

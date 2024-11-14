@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // This arrangement can be altered based on how we want the date's format to appear.
   let formattedCurrentDate = `${year}-${month}-${day}`;
-  document.getElementById("date").value=formattedCurrentDate;
+  document.getElementById("date").value = formattedCurrentDate;
   const date = document.getElementById("date").value;
   const errorContainer = document.createElement("div");
   errorContainer.className = "mb-4 text-red-600";
@@ -39,6 +39,10 @@ document.addEventListener("DOMContentLoaded", function () {
           const amount = parseFloat(amountInput.value);
           if (isNaN(amount) || amount <= 0) {
             errors.push("Le montant doit être un nombre positif.");
+          }
+
+          if ((amount > data.account.balance) && typeSelect.value == "withdrawal") {
+            errors.push("Vous ne pouvez pas retirer plus que ce que vous avez en solde."+" Solde actuel: "+data.account.balance+",00 €");
           }
 
           // Display errors or proceed

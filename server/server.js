@@ -38,12 +38,14 @@ function checkCookieMiddleware(req, res, next) {
 app.use("/dashboard", checkCookieMiddleware);
 app.use("/profile", checkCookieMiddleware);
 app.use("/account/add", checkCookieMiddleware);
+app.use("/account/update", checkCookieMiddleware);
 app.use("/history", checkCookieMiddleware);
 app.use("/api/user/connections", checkCookieMiddleware);
 app.use("/transactions", checkCookieMiddleware);
 app.use("/api/user/update", checkCookieMiddleware);
 app.use("/api/transaction/user/csv", checkCookieMiddleware);
 app.use("/api/account/add", checkCookieMiddleware);
+app.use("/api/account/update", checkCookieMiddleware);
 app.use("/api/accounts/delete", checkCookieMiddleware);
 app.use("/api/accounts/getAll", checkCookieMiddleware);
 app.use("/api/accounts/getById", checkCookieMiddleware);
@@ -77,6 +79,16 @@ app.get("/account/add", (req, res) => {
 
 app.get("/js/account/add", (req, res) => {
   const filePath = path.join(__dirname, "..", "src", "addBankAccount.js");
+  res.sendFile(filePath);
+});
+
+app.get("/account/update", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "editBankAccount.html");
+  res.sendFile(filePath);
+});
+
+app.get("/js/account/update", (req, res) => {
+  const filePath = path.join(__dirname, "..", "src", "editBankAccount.js");
   res.sendFile(filePath);
 });
 
@@ -468,8 +480,8 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Query to find all transactions related to the user's accounts
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
-        "FROM transactions t " +
-        "WHERE t.accountId = ANY($1)",
+      "FROM transactions t " +
+      "WHERE t.accountId = ANY($1)",
       [accountIds],
     );
     client.release();
@@ -520,6 +532,41 @@ app.post("/api/account/add", getUserFromToken, async (req, res) => {
       .json({ message: "Account created successfully", account: newAccount });
   } catch (error) {
     return res.status(500).json({ error: "Failed to create account" });
+  }
+});
+
+app.put("/api/account/update", getUserFromToken, async (req, res) => {
+  const { id, name, type, lowSale, balance } = req.body;
+  const userId = req.userId;
+
+  if (!id || !name || !type || lowSale === undefined || balance === undefined) {
+    return res.status(400).json({ error: "Tous les champs sont requis" });
+  }
+
+  try {
+    const client = await pool.connect();
+
+    // Vérifiez que le compte appartient bien à l'utilisateur
+    const accountResult = await client.query(
+      "SELECT id FROM accounts WHERE id = $1 AND userId = $2",
+      [id, userId]
+    );
+
+    if (accountResult.rowCount === 0) {
+      return res.status(404).json({ error: "Compte introuvable ou non autorisé" });
+    }
+
+    // Mettre à jour le compte
+    await client.query(
+      "UPDATE accounts SET name = $1, type = $2, lowSale = $3, balance = $4 WHERE id = $5",
+      [name, type, lowSale, balance, id]
+    );
+
+    client.release();
+    return res.status(200).json({ message: "Compte mis à jour avec succès" });
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du compte:", error);
+    return res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
@@ -744,8 +791,8 @@ app.post("/api/transactions/add", async (req, res) => {
     // Insert the transaction into the database
     const transactionResult = await client.query(
       "INSERT INTO transactions (type, amount, balance, accountId) " +
-        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
-        "RETURNING id, type, amount, balance, accountId",
+      "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
+      "RETURNING id, type, amount, balance, accountId",
       [type, amount, accountId],
     );
 
