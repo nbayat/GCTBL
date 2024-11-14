@@ -96,11 +96,9 @@ app.get("/homepage", (req, res) => {
   res.sendFile(filePath);
 });
 
-
-app.get('/', (req, res) => {
-  res.redirect('/homepage');  // Redirige vers /homepage pour toute route non trouvée
+app.get("/", (req, res) => {
+  res.redirect("/homepage"); // Redirige vers /homepage pour toute route non trouvée
 });
-
 
 app.get("/api/user/connections", async (req, res) => {
   let client;
@@ -338,12 +336,12 @@ app.get("/api/user", async (req, res) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
+  let client; // Declare the client variable
+
   try {
     // Verify and decode the JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
     const userEmail = decoded.email;
-
-    let client; // Declare the client variable
 
     // Connect to the database
     // Connect to the database
@@ -356,7 +354,6 @@ app.get("/api/user", async (req, res) => {
       userEmail,
     ]);
     const user = result.rows[0];
-
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -398,11 +395,10 @@ app.put("/api/user/update", async (req, res) => {
     // Mettre à jour les données de l'utilisateur
     await client.query(
       `UPDATE users SET nom = $1, email = $2 WHERE email = $3`,
-      [firstname + ' ' + lastname, email, userEmail]
+      [firstname + " " + lastname, email, userEmail],
     );
 
     res.status(200).json({ success: true });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erreur interne du serveur" });
@@ -467,8 +463,8 @@ app.get("/api/transaction/user/csv", getUserFromToken, async (req, res) => {
     // Query to find all transactions related to the user's accounts
     const transactionsResult = await client.query(
       "SELECT t.id, t.type, t.amount, t.balance, t.accountId " +
-      "FROM transactions t " +
-      "WHERE t.accountId = ANY($1)",
+        "FROM transactions t " +
+        "WHERE t.accountId = ANY($1)",
       [accountIds],
     );
     client.release();
@@ -649,7 +645,7 @@ app.get("/api/accounts/getById", async (req, res) => {
       // Récupération de l'ID utilisateur via l'email du token décodé
       const userResult = await client.query(
         "SELECT id FROM users WHERE email = $1",
-        [userEmail]
+        [userEmail],
       );
       const user = userResult.rows[0];
       if (!user) {
@@ -666,7 +662,7 @@ app.get("/api/accounts/getById", async (req, res) => {
       // Récupération des informations du compte à partir de l'ID
       const accountResult = await client.query(
         "SELECT id, name, type, lowSale, balance FROM accounts WHERE userId = $1 AND id = $2",
-        [user.id, accountId]
+        [user.id, accountId],
       );
 
       const account = accountResult.rows[0];
@@ -676,7 +672,6 @@ app.get("/api/accounts/getById", async (req, res) => {
 
       // Réponse avec les informations du compte
       res.status(200).json({ account });
-
     } finally {
       client.release();
     }
@@ -744,8 +739,8 @@ app.post("/api/transactions/add", async (req, res) => {
     // Insert the transaction into the database
     const transactionResult = await client.query(
       "INSERT INTO transactions (type, amount, balance, accountId) " +
-      "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
-      "RETURNING id, type, amount, balance, accountId",
+        "VALUES ($1, $2, (SELECT balance FROM accounts WHERE id = $3) + $2, $3) " +
+        "RETURNING id, type, amount, balance, accountId",
       [type, amount, accountId],
     );
 
@@ -840,10 +835,9 @@ app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-
 function redirectToHomepage(req, res, next) {
-  if (req.url === '/') {
-    res.redirect('/homepage');
+  if (req.url === "/") {
+    res.redirect("/homepage");
   } else {
     next();
   }
