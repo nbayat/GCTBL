@@ -2,6 +2,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("transactionForm");
   const amountInput = document.getElementById("amount");
   const typeSelect = document.getElementById("type");
+  const currentDate = new Date();
+
+  let day = currentDate.getDate();
+  let month = currentDate.getMonth() + 1;
+  let year = currentDate.getFullYear();
+
+  // This arrangement can be altered based on how we want the date's format to appear.
+  let formattedCurrentDate = `${year}-${month}-${day}`;
+  document.getElementById("date").value=formattedCurrentDate;
+  const date = document.getElementById("date").value;
   const errorContainer = document.createElement("div");
   errorContainer.className = "mb-4 text-red-600";
   form.insertBefore(
@@ -25,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
         form.addEventListener("submit", async function (e) {
           e.preventDefault();
           let errors = [];
-
           // Validate amount
           const amount = parseFloat(amountInput.value);
           if (isNaN(amount) || amount <= 0) {
@@ -46,7 +55,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const transactionData = {
               type: typeSelect.value,
               amount: amountByType,
-              accountId: accountId, // Include the accountId from the URL
+              accountId: accountId,
+              transaction_date: date // Include the accountId from the URL
             };
 
             try {
@@ -60,8 +70,8 @@ document.addEventListener("DOMContentLoaded", function () {
               });
 
               if (response.ok) {
-                if (((data.account.balance - amountByType) < data.account.lowsale) && typeSelect.value == "withdrawal")localStorage.setItem("warningMessage", "Votre solde est inférieur au seuil défini. Veuillez recharger votre compte.");
-                  window.location.href = "/history?id=" + accountId;
+                if (((data.account.balance - amountByType) < data.account.lowsale) && typeSelect.value == "withdrawal") localStorage.setItem("warningMessage", "Votre solde est inférieur au seuil défini. Veuillez recharger votre compte.");
+                window.location.href = "/history?id=" + accountId;
               } else {
                 // Display error message if the API call fails
                 errorContainer.innerHTML =

@@ -62,11 +62,6 @@ document.addEventListener("DOMContentLoaded", function () {
         typeCell.className = "px-6 py-3";
         typeCell.textContent = formattedType(account.type);
 
-        // Low sale
-        const lowSaleCell = document.createElement("td");
-        lowSaleCell.className = "px-6 py-3 text-right";
-        lowSaleCell.textContent = `${account.lowsale} €`;
-
         // Current balance
         const balanceCell = document.createElement("td");
         balanceCell.className = "px-6 py-3 text-right";
@@ -93,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
         row.appendChild(nameCell);
         row.appendChild(typeCell);
         row.appendChild(balanceCell);
-        row.appendChild(lowSaleCell);
         row.appendChild(actionsCell);
 
         tbody.appendChild(row);

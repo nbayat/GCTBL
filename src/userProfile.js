@@ -75,8 +75,8 @@ function loadUserData() {
         .then(data => {
             if (data.user && data.user.nom && data.user.email) {
                 // Remplir le formulaire avec les données de l'utilisateur
-                firstnameLoaded = data.user.nom.split(' ')[0];
-                lastnameLoaded = data.user.nom.split(' ')[1];
+                firstnameLoaded = data.user.nom.split(' ')[1];
+                lastnameLoaded = data.user.nom.split(' ')[0];
                 emailLoaded = data.user.email;
                 document.getElementById('firstname').value = firstnameLoaded;
                 document.getElementById('lastname').value = lastnameLoaded;
