@@ -16,7 +16,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let transactionsData = [];
 
   if (localStorage.getItem("warningMessage")) {
-    document.getElementById("notification-message").textContent = localStorage.getItem("warningMessage");;
+    document.getElementById("notification-message").textContent =
+      localStorage.getItem("warningMessage");
     notification.classList.remove("hidden");
     setTimeout(closeNotification, 4000);
   }
@@ -36,25 +37,31 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      fetch('api/accounts/getById?accountId=' + accountId, {
-        method: 'GET',
+      fetch("api/accounts/getById?accountId=" + accountId, {
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-        }
+          "Content-Type": "application/json",
+        },
       })
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data) {
-            document.getElementById("accountTitle").innerHTML = "Historique des transactions de " + data.account.name;
-            document.getElementById("balance").innerHTML = "Solde : " + data.account.balance + " €";
-            document.getElementById("lowSale").innerHTML = "Solde bas : " + data.account.lowsale + " €";
+            document.getElementById("accountTitle").innerHTML =
+              "Historique des transactions de " + data.account.name;
+            document.getElementById("balance").innerHTML =
+              "Solde : " + data.account.balance + " €";
+            document.getElementById("lowSale").innerHTML =
+              "Solde bas : " + data.account.lowsale + " €";
             // Remplir le formulaire avec les données de l'utilisateur
           } else {
-            console.error('Utilisateur non trouvé ou données manquantes');
+            console.error("Utilisateur non trouvé ou données manquantes");
           }
         })
-        .catch(error => {
-          console.error('Erreur lors de la récupération des données utilisateur:', error);
+        .catch((error) => {
+          console.error(
+            "Erreur lors de la récupération des données utilisateur:",
+            error,
+          );
         });
 
       const response = await fetch("/api/transactions/getAll", {
@@ -77,6 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Fetch error:", error);
     }
   }
+
+  // Download transactions as CSV
 
   // Function to filter transactions by period
   function filterByPeriod(transactions, period) {
@@ -163,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
         dateCell.textContent = transactionDate.toLocaleDateString(); // Format date as you need
 
         const typeCell = document.createElement("td");
-        let formattedType = ""
+        let formattedType = "";
         if (transaction.type == "deposit") formattedType = "Dépôt";
         else if (transaction.type == "withdrawal") formattedType = "Retrait";
         typeCell.textContent = formattedType;
