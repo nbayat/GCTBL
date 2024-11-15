@@ -14,3 +14,42 @@ body {
     width: 50px;
     height: 50px;
 }
+
+
+/* Animation pour effacer le texte */
+@keyframes eraseText {
+    0% {
+        width: 100%;
+    }
+
+    100% {
+        width: 0%;
+    }
+}
+
+@keyframes eraseText {
+    0% {
+        width: 100%;
+    }
+    100% {
+        width: 0%;
+    }
+}
+
+/* Animation pour écrire le texte */
+@keyframes typeText {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+.text-animate {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid transparent;
+    animation: typeText 2s steps(10) forwards, eraseText 2s steps(10) 2s forwards;
+}

@@ -100,10 +100,10 @@ document.addEventListener("DOMContentLoaded", loadUserData);
 function editData(event) {
     showLoader();
     event.preventDefault(); // Empêche le rafraîchissement de la page
-
     const firstname = document.getElementById('firstname').value;
     const lastname = document.getElementById('lastname').value;
     const email = document.getElementById('email').value;
+    animateText(); 
 
     // Envoi de la requête PUT pour mettre à jour les informations
     fetch('/api/user/update', {
@@ -137,6 +137,7 @@ function editData(event) {
             hideLoader();
         });
 }
+
 function reload() {
     window.location.reload();
 }
