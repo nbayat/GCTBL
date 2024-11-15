@@ -43,24 +43,24 @@ Ce projet est une application permettant aux utilisateurs de gérer leurs compte
    - Permet de définir un seuil pour chaque compte et envoie une alerte si le solde descend en dessous.
    - [Page d'ajout d'une transaction pour avoir une notification de solde bas](http://localhost:3000/transactions?id=) (Connexion requise) (Être sur un compte avant pour l'identifier)
 
-9.  **Filtrage des Transactions par Période**
+9. **Filtrage des Transactions par Période**
    - Filtre des transactions par période (7, 30, ou 90 jours).
    - Notification si aucune transaction ne correspond au filtre.
    - [Page de consultation de l’Historique des Transactions pour le filtrage des transactions par période](http://localhost:3000/history?id=) (Connexion requise) (Être sur un compte avant pour l'identifier)
 
-10.  **Téléchargement de l’Historique des Transactions**
+10. **Téléchargement de l’Historique des Transactions**
     - Téléchargement de l’historique en fichier CSV avec toutes les informations nécessaires.
     - [Page de consultation de l’Historique des Transactions pour le téléchargement de l’historique des Transactions](http://localhost:3000/history?id=) (Connexion requise) (Être sur un compte avant pour l'identifier)
 
-11.  **Profil Utilisateur et Modification des Informations Personnelles**
+11. **Profil Utilisateur et Modification des Informations Personnelles**
     - Affiche et permet la modification des informations personnelles de l’utilisateur.
     - [Page de profil utilisateur](http://localhost:3000/profile) (Connexion requise)
 
-12.  **Historique de Connexion et Sécurité**
+12. **Historique de Connexion et Sécurité**
     - Affichage des connexions avec des détails comme l’adresse IP et la date, et alerte en cas de connexion suspecte.
     - [Page de profil utilisateur pour l'historique de Connexion et Sécurité](http://localhost:3000/profile) (Connexion requise)
 
-13.  **Suppression d’un Compte Bancaire**
+13. **Suppression d’un Compte Bancaire**
     - Permet la suppression de comptes bancaires avec confirmation et mise à jour du solde total.
     - [Page des visualisation des comptes bancaires pour la Suppression d’un Compte Bancaire](http://localhost:3000/dashboard) (Connexion requise) (création d'un compte bancaire requis)
 
