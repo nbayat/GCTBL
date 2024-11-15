@@ -53,12 +53,23 @@ app.use("/api/transactions/add", checkCookieMiddleware);
 app.use("/api/transactions/getAll", checkCookieMiddleware);
 
 app.get("/login", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "login.html");
+  const filePath = path.join(__dirname, "..", "public", "auth","login.html");
   res.sendFile(filePath);
 });
 
+app.get("/logo", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "assets", "images", "logo.png");
+  res.sendFile(filePath);
+});
+
+app.get("/style", (req, res) => {
+  const filePath = path.join(__dirname, "..", "public", "assets", "css", "style.css");
+  res.sendFile(filePath);
+});
+
+
 app.get("/register", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "register.html");
+  const filePath = path.join(__dirname, "..", "public", "pages", "auth", "register.html");
   res.sendFile(filePath);
 });
 
@@ -68,27 +79,27 @@ app.get("/dashboard", (req, res) => {
 });
 
 app.get("/js/dashboard", (req, res) => {
-  const filePath = path.join(__dirname, "..", "src", "dashboard.js");
+  const filePath = path.join(__dirname, "..", "public", "scripts", "dashboard.js");
   res.sendFile(filePath);
 });
 
 app.get("/account/add", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "addBankAccount.html");
+  const filePath = path.join(__dirname, "..", "public", "pages", "accounts", "addBankAccount.html");
   res.sendFile(filePath);
 });
 
 app.get("/js/account/add", (req, res) => {
-  const filePath = path.join(__dirname, "..", "src", "addBankAccount.js");
+  const filePath = path.join(__dirname, "..", "public", "scripts", "accounts", "addBankAccount.js");
   res.sendFile(filePath);
 });
 
 app.get("/account/update", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "editBankAccount.html");
+  const filePath = path.join(__dirname, "..", "public", "pages", "accounts", "editBankAccount.html");
   res.sendFile(filePath);
 });
 
 app.get("/js/account/update", (req, res) => {
-  const filePath = path.join(__dirname, "..", "src", "editBankAccount.js");
+  const filePath = path.join(__dirname, "..", "public", "scripts", "accounts","editBankAccount.js");
   res.sendFile(filePath);
 });
 
@@ -97,6 +108,8 @@ app.get("/history", (req, res) => {
     __dirname,
     "..",
     "public",
+    "pages", 
+    "accounts",
     "bankTransactionsHistory.html",
   );
   res.sendFile(filePath);
@@ -106,7 +119,8 @@ app.get("/js/history", (req, res) => {
   const filePath = path.join(
     __dirname,
     "..",
-    "src",
+    "public", "scripts",
+    "accounts",
     "bankTransactionsHistory.js",
   );
   res.sendFile(filePath);
@@ -173,13 +187,15 @@ app.get("/transactions", (req, res) => {
     __dirname,
     "..",
     "public",
+    "pages", 
+    "accounts",
     "addBankTransaction.html",
   );
   res.sendFile(filePath);
 });
 
 app.get("/js/transactions", (req, res) => {
-  const filePath = path.join(__dirname, "..", "src", "addBankTransaction.js");
+  const filePath = path.join(__dirname, "..", "public", "scripts", "accounts", "addBankTransaction.js");
   res.sendFile(filePath);
 });
 
@@ -189,7 +205,7 @@ app.get("/profile", (req, res) => {
 });
 
 app.get("/js/profile", (req, res) => {
-  const filePath = path.join(__dirname, "..", "src", "userProfile.js");
+  const filePath = path.join(__dirname, "..", "public", "scripts", "userProfile.js");
   res.sendFile(filePath);
 });
 
