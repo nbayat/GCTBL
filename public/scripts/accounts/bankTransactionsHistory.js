@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to fetch transactions from the API (POST method with accountId from URL)
   async function fetchTransactions() {
+    showLoader();
     try {
       const accountId = getUrlParameter("id");
       if (!accountId) {
@@ -46,8 +47,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((data) => {
           if (data) {
             document.getElementById("accountTitle").innerHTML = "Historique des transactions de " + data.account.name;
-            document.getElementById("balance").innerHTML = "Solde : " + '<span class="font-semibold text-[#008250]">'+formatCurrency(data.account.balance)+'</span>';
-            document.getElementById("lowSale").innerHTML = "Solde bas : " + '<span class="font-semibold text-[#008250]">'+formatCurrency(data.account.lowsale)+'</span>';
+            document.getElementById("balance").innerHTML = "Solde : " + '<span class="font-semibold text-[#008250]">' + formatCurrency(data.account.balance) + '</span>';
+            document.getElementById("lowSale").innerHTML = "Solde bas : " + '<span class="font-semibold text-[#008250]">' + formatCurrency(data.account.lowsale) + '</span>';
             // Remplir le formulaire avec les données de l'utilisateur
           } else {
             console.error("Utilisateur non trouvé ou données manquantes");
@@ -78,6 +79,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (error) {
       console.error("Fetch error:", error);
+    } finally {
+      hideLoader();
     }
   }
 
@@ -180,10 +183,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Check if transaction type is 'deposit' or 'withdrawal'
         if (transaction.type === "deposit") {
-          amountCell.textContent = "+"+formatCurrency(transaction.amount);
+          amountCell.textContent = "+" + formatCurrency(transaction.amount);
           amountCell.style.color = "green";
         } else if (transaction.type === "withdrawal") {
-          amountCell.textContent = "-"+formatCurrency(Math.abs(transaction.amount));
+          amountCell.textContent = "-" + formatCurrency(Math.abs(transaction.amount));
           amountCell.style.color = "red";
         } else {
           amountCell.textContent = `-`;
@@ -205,6 +208,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  document.addEventListener("DOMContentLoaded", () => {
+    // Récupérer les paramètres de l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+
+    // Vérifie si le paramètre 'success' est présent dans l'URL
+    if (success === 'true') {
+      const notification = document.getElementById("notification");
+      const notificationMessage = document.getElementById("notification-message");
+      notificationMessage.textContent = "Le fichier CSV a été téléchargé avec succès!";
+      notification.classList.remove("hidden");
+
+      // Efface le paramètre de l'URL après 3 secondes
+      setTimeout(() => {
+        const url = new URL(window.location);
+        url.searchParams.delete('success');
+        window.history.replaceState({}, document.title, url);
+      }, 3000);
+    }
+  });
+
+  // Fonction pour fermer la notification
+  function closeNotification() {
+    document.getElementById("notification").classList.add("hidden");
+  }
+
+
   function closeNotification() {
     document.getElementById("notification").classList.add("hidden");
     localStorage.clear();
@@ -225,4 +255,73 @@ function formatCurrency(amount) {
   return amount.toFixed(2) // Formater en deux décimales
     .replace(/\d(?=(\d{3})+\.)/g, '$& ') // Ajouter un espace tous les trois chiffres avant le point
     .replace('.', ',') + ' €'; // Remplacer le point par une virgule et ajouter le symbole €
+}
+
+// Fonction pour afficher le loader
+function showLoader() {
+  const loader = document.getElementById("loader");
+  loader.classList.remove("hidden");
+}
+
+// Fonction pour masquer le loader
+function hideLoader() {
+  const loader = document.getElementById("loader");
+  loader.classList.add("hidden");
+}
+
+async function downloadCSV() {
+  showLoader();
+  try {
+      // Get the 'id' parameter from the current URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const accountId = urlParams.get("id");
+
+      if (!accountId) {
+          console.error("Account ID is missing in the URL");
+          return;
+      }
+
+      // Call the API with the accountId as a query parameter
+      const response = await fetch(
+          `/api/transaction/account/csv?accountId=${accountId}`,
+          {
+              method: "GET",
+          },
+      );
+
+      if (response.ok) {
+          // Convert the response to a Blob for download
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          // Create a temporary anchor to initiate download
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `transactions_${accountId}.csv`; // Set the desired file name here
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          // Show notification
+          const notification = document.getElementById("notification");
+          const notificationMessage = document.getElementById(
+              "notification-message",
+          );
+          notificationMessage.textContent =
+              "Le fichier CSV a été téléchargé avec succès!";
+          notification.classList.remove("hidden");
+
+          // Hide the notification after 3 seconds
+          setTimeout(() => {
+              notification.classList.add("hidden");
+          }, 3000);
+      } else {
+          console.error("Error fetching transactions:", await response.text());
+          // You can display an error message to the user here if necessary
+      }
+  } catch (error) {
+      console.error("Fetch error:", error);
+  } finally{
+    hideLoader();
+  }
 }

@@ -65,6 +65,7 @@ var lastnameLoaded = "";
 var emailLoaded = "";
 
 function loadUserData() {
+    showLoader();
     fetch('/api/user', {
         method: 'GET',
         headers: {
@@ -84,9 +85,11 @@ function loadUserData() {
             } else {
                 console.error('Utilisateur non trouvé ou données manquantes');
             }
+            hideLoader();
         })
         .catch(error => {
             console.error('Erreur lors de la récupération des données utilisateur:', error);
+            hideLoader();
         });
 }
 
@@ -95,6 +98,7 @@ document.addEventListener("DOMContentLoaded", loadUserData);
 
 // Gérer la soumission du formulaire pour mettre à jour les informations
 function editData(event) {
+    showLoader();
     event.preventDefault(); // Empêche le rafraîchissement de la page
 
     const firstname = document.getElementById('firstname').value;
@@ -126,9 +130,11 @@ function editData(event) {
             } else {
                 alert("L'email est déjà utilisé.");
             }
+            hideLoader();
         })
         .catch(error => {
             console.error('Erreur lors de la mise à jour des informations utilisateur:', error);
+            hideLoader();
         });
 }
 function reload() {
@@ -156,13 +162,28 @@ function changePassword(event) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Mot de passe modifié avec succès.");
-        } else {
-            alert("Erreur: " + data.error);
-        }
-    })
-    .catch(error => console.error("Erreur:", error));
+        .then(showLoader())
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Mot de passe modifié avec succès.");
+            } else {
+                alert("Erreur: " + data.error);
+            }
+            hideLoader();
+        })
+        .catch(error => { console.error("Erreur:", error); hideLoader(); });
+}
+
+
+// Fonction pour afficher le loader
+function showLoader() {
+    const loader = document.getElementById("loader");
+    loader.classList.remove("hidden");
+}
+
+// Fonction pour masquer le loader
+function hideLoader() {
+    const loader = document.getElementById("loader");
+    loader.classList.add("hidden");
 }

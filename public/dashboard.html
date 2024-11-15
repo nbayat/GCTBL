@@ -13,6 +13,10 @@
 </head>
 
 <body class="bg-gray-100 text-gray-900">
+    
+    <div id="loader" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
 
     <!-- En-tête -->
     <header class="mb-6">
@@ -48,7 +52,7 @@
             &times; <!-- Symbole de fermeture -->
         </button>
     </div>
-    
+
     <!-- Corps de la page -->
     <div class="flex flex-col items-center min-h-screen space-y-8">
         <!-- Titre de la page -->
@@ -107,7 +111,7 @@
         </div>
     </div>
 
-        <footer class="mt-12 text-center text-sm text-gray-600">
+    <footer class="mt-12 text-center text-sm text-gray-600">
         <p>&copy; 2024 Mina. Tous droits réservés.</p>
     </footer>
 </body>

@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Fetch account data from the API
   async function fetchAccountsData() {
+    showLoader();
     try {
       const response = await fetch("/api/accounts/getAll");
       if (!response.ok) {
@@ -31,6 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Error fetching accounts:", error);
       tbody.innerHTML =
         '<tr><td colspan="5" class="text-center">Erreur lors de la récupération des données</td></tr>';
+    } finally {
+      hideLoader(); // Masque le loader à la fin
     }
   }
 
@@ -120,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Delete an account and update the total balance
   async function deleteAccount(accountId) {
+    showLoader();
     try {
       // Send POST request to the API to delete the account
       const response = await fetch("/api/accounts/delete", {
@@ -141,6 +145,8 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (error) {
       console.error("Error deleting account:", error);
       // You can also show an error message to the user if you like
+    } finally{
+      hideLoader();
     }
   }
 
@@ -154,6 +160,18 @@ function closeNotification() {
 }
 function formatCurrency(amount) {
   return amount.toFixed(2) // Formater en deux décimales
-               .replace(/\d(?=(\d{3})+\.)/g, '$& ') // Ajouter un espace tous les trois chiffres avant le point
-               .replace('.', ',') + ' €'; // Remplacer le point par une virgule et ajouter le symbole €
+    .replace(/\d(?=(\d{3})+\.)/g, '$& ') // Ajouter un espace tous les trois chiffres avant le point
+    .replace('.', ',') + ' €'; // Remplacer le point par une virgule et ajouter le symbole €
+}
+
+// Fonction pour afficher le loader
+function showLoader() {
+  const loader = document.getElementById("loader");
+  loader.classList.remove("hidden");
+}
+
+// Fonction pour masquer le loader
+function hideLoader() {
+  const loader = document.getElementById("loader");
+  loader.classList.add("hidden");
 }

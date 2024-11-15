@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Fonction pour récupérer et afficher les données du compte
     async function fetchAccountData() {
+        showLoader();
         try {
             const response = await fetch(`/api/accounts/getById?accountId=${accountId}`);
             if (!response.ok) throw new Error("Erreur lors de la récupération des données du compte.");
@@ -33,6 +34,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.error(error);
             alert("Une erreur est survenue lors du chargement des données du compte.");
             window.location.href = "/dashboard";
+        } finally {
+            hideLoader();
         }
     }
 
@@ -42,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Gestion de la soumission du formulaire
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
-
+        showLoader();
         const updatedAccountData = {
             id: accountId,
             name: accountNameInput.value.trim(),
@@ -70,6 +73,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         } catch (error) {
             console.error(error);
             alert("Erreur réseau lors de la mise à jour du compte.");
+        } finally {
+            hideLoader();
         }
     });
+    function showLoader() {
+        const loader = document.getElementById("loader");
+        loader.classList.remove("hidden");
+    }
+
+    // Fonction pour masquer le loader
+    function hideLoader() {
+        const loader = document.getElementById("loader");
+        loader.classList.add("hidden");
+    }
 });

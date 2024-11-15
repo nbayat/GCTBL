@@ -464,7 +464,7 @@ app.put("/api/user/update", async (req, res) => {
     // Mettre à jour les données de l'utilisateur
     await client.query(
       `UPDATE users SET nom = $1, email = $2 WHERE email = $3`,
-      [firstname + " " + lastname, email, userEmail],
+      [lastname + " " + firstname, email, userEmail],
     );
 
     res.status(200).json({ success: true });

@@ -13,6 +13,9 @@
 </head>
 
 <body class="bg-gray-100 text-gray-900">
+    <div id="loader" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
 
     <!-- En-tête -->
     <header class="mb-6">
@@ -121,94 +124,10 @@
         </div>
     </div>
 
-        <footer class="mt-12 text-center text-sm text-gray-600">
+    <footer class="mt-12 text-center text-sm text-gray-600">
         <p>&copy; 2024 Mina. Tous droits réservés.</p>
     </footer>
 
-    <script>
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // Récupérer les paramètres de l'URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const success = urlParams.get('success');
-
-            // Vérifie si le paramètre 'success' est présent dans l'URL
-            if (success === 'true') {
-                const notification = document.getElementById("notification");
-                const notificationMessage = document.getElementById("notification-message");
-                notificationMessage.textContent = "Le fichier CSV a été téléchargé avec succès!";
-                notification.classList.remove("hidden");
-
-                // Efface le paramètre de l'URL après 3 secondes
-                setTimeout(() => {
-                    const url = new URL(window.location);
-                    url.searchParams.delete('success');
-                    window.history.replaceState({}, document.title, url);
-                }, 3000);
-            }
-        });
-
-        // Fonction pour fermer la notification
-        function closeNotification() {
-            document.getElementById("notification").classList.add("hidden");
-        }
-
-        async function downloadCSV() {
-            try {
-                // Get the 'id' parameter from the current URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const accountId = urlParams.get("id");
-
-                if (!accountId) {
-                    console.error("Account ID is missing in the URL");
-                    return;
-                }
-
-                // Call the API with the accountId as a query parameter
-                const response = await fetch(
-                    `/api/transaction/account/csv?accountId=${accountId}`,
-                    {
-                        method: "GET",
-                    },
-                );
-
-                console.log(response);
-
-                if (response.ok) {
-                    // Convert the response to a Blob for download
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-
-                    // Create a temporary anchor to initiate download
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `transactions_${accountId}.csv`; // Set the desired file name here
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-
-                    // Show notification
-                    const notification = document.getElementById("notification");
-                    const notificationMessage = document.getElementById(
-                        "notification-message",
-                    );
-                    notificationMessage.textContent =
-                        "Le fichier CSV a été téléchargé avec succès!";
-                    notification.classList.remove("hidden");
-
-                    // Hide the notification after 3 seconds
-                    setTimeout(() => {
-                        notification.classList.add("hidden");
-                    }, 3000);
-                } else {
-                    console.error("Error fetching transactions:", await response.text());
-                    // You can display an error message to the user here if necessary
-                }
-            } catch (error) {
-                console.error("Fetch error:", error);
-            }
-        }
-    </script>
 </body>
 
 </html>
