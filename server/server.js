@@ -53,7 +53,7 @@ app.use("/api/transactions/add", checkCookieMiddleware);
 app.use("/api/transactions/getAll", checkCookieMiddleware);
 
 app.get("/login", (req, res) => {
-  const filePath = path.join(__dirname, "..", "public", "auth","login.html");
+  const filePath = path.join(__dirname, "..", "public", "pages", "auth","login.html");
   res.sendFile(filePath);
 });
 
