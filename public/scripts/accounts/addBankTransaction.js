@@ -23,6 +23,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data) {
         form.addEventListener("submit", async function (e) {
           e.preventDefault();
+
+          // Désactiver le bouton pour éviter les clics multiples
+          const submitButton = form.querySelector('button[type="submit"]');
+          submitButton.disabled = true;
+
           let errors = [];
 
           const amount = parseFloat(amountInput.value);
@@ -37,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // Display errors or proceed
           if (errors.length > 0) {
             errorContainer.innerHTML = errors.join("<br>");
+            submitButton.disabled = false; // Réactivez le bouton si des erreurs sont détectées
           } else {
             errorContainer.innerHTML = "";
 
@@ -63,11 +69,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 window.location.href = "/history?id=" + accountId;
               } else {
-                errorContainer.innerHTML =
-                  "Erreur lors de l'ajout de la transaction.";
+                errorContainer.innerHTML = "Erreur lors de l'ajout de la transaction.";
+                submitButton.disabled = false; // Réactivez le bouton en cas d'échec
               }
             } catch (error) {
               errorContainer.innerHTML = "Erreur de connexion au serveur.";
+              submitButton.disabled = false; // Réactivez le bouton en cas d'échec
             }
           }
         });

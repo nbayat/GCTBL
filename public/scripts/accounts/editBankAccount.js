@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Gestion de la soumission du formulaire
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
         showLoader();
         const updatedAccountData = {
             id: accountId,
@@ -61,7 +63,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 body: JSON.stringify(updatedAccountData)
             });
 
-            if (!response.ok) throw new Error("Erreur lors de la mise à jour du compte.");
+            if (!response.ok) {
+                throw new Error("Erreur lors de la mise à jour du compte.");
+                submitButton.disabled = false; // Réactivez le bouton si des erreurs sont détectées
+            }
 
             const data = await response.json();
             if (data.message === "Compte mis à jour avec succès") {
@@ -69,10 +74,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                 window.location.href = "/dashboard";
             } else {
                 alert(data.error || "Une erreur est survenue lors de la mise à jour.");
+                submitButton.disabled = false; // Réactivez le bouton en cas d'échec
             }
         } catch (error) {
             console.error(error);
             alert("Erreur réseau lors de la mise à jour du compte.");
+            submitButton.disabled = false; // Réactivez le bouton en cas d'erreur
         } finally {
             hideLoader();
         }

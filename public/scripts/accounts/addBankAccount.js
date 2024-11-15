@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   form.addEventListener("submit", function (e) {
     e.preventDefault(); // Prevent the default form submission
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
     let errors = [];
 
     // Validation du nom de compte
@@ -42,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Afficher les erreurs ou procéder avec la requête AJAX
     if (errors.length > 0) {
       errorContainer.innerHTML = errors.join("<br>");
+      submitButton.disabled = false; // Réactivez le bouton si des erreurs sont détectées
     } else {
       errorContainer.innerHTML = ""; // Clear previous errors
 
@@ -70,12 +73,14 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
             // Display error if account creation failed
             errorContainer.innerHTML = data.error || "Une erreur est survenue.";
+            submitButton.disabled = false; // Réactivez le bouton en cas d'échec
           }
         })
         .catch((error) => {
           // Handle network or server errors
           console.error("Error:", error);
           errorContainer.innerHTML = "Une erreur réseau est survenue.";
+          submitButton.disabled = false; // Réactivez le bouton en cas d'erreur
         });
     }
   });
